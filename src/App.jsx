@@ -5,7 +5,6 @@ import MetricCard from './components/MetricCard'
 import AdvicePanel from './components/AdvicePanel'
 import DailyPlanPanel from './components/DailyPlanPanel'
 import ReadingGuide from './components/ReadingGuide'
-import StorylineNav from './components/StorylineNav'
 import {
   generateAdvice,
   getBodyFatStatus, getVisceralFatStatus, getWaterStatus,
@@ -105,9 +104,7 @@ export default function App() {
           </div>
         </div>
 
-        <ReadingGuide weekday={todayLabel} trainingLabel={todayTraining} />
-
-        <StorylineNav sections={storylineSections} />
+        <ReadingGuide weekday={todayLabel} trainingLabel={todayTraining} sections={storylineSections} />
 
         <section id="story-status" className="scroll-mt-24">
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">核心指标</h2>
