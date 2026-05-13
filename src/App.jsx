@@ -71,16 +71,9 @@ export default function App() {
   return (
     <div className="min-h-screen bg-dark-900 text-slate-200 font-sans">
       <header className="border-b border-dark-700 px-4 py-4 sm:px-6 sm:py-4">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-lg font-bold tracking-tight text-white sm:text-xl">Body Dashboard</h1>
-            <p className="mt-0.5 text-xs text-slate-500">Daemon · 身体数据可视化</p>
-          </div>
-          <div className="flex items-end justify-between rounded-xl border border-dark-600 bg-dark-800/70 px-3 py-2 sm:block sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:text-right">
-            <div className="text-xs uppercase tracking-[0.18em] text-slate-500 sm:hidden">综合得分</div>
-            <div className="text-2xl font-bold text-accent">{latest.score ?? '—'}</div>
-            <div className="hidden text-xs text-slate-500 sm:block">综合得分</div>
-          </div>
+        <div className="mx-auto max-w-6xl">
+          <h1 className="text-lg font-bold tracking-tight text-white sm:text-xl">Body Dashboard</h1>
+          <p className="mt-0.5 text-xs text-slate-500">Daemon · 身体数据可视化</p>
         </div>
       </header>
 
