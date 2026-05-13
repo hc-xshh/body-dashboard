@@ -5,6 +5,7 @@ import MetricCard from './components/MetricCard'
 import AdvicePanel from './components/AdvicePanel'
 import DailyPlanPanel from './components/DailyPlanPanel'
 import ReadingGuide from './components/ReadingGuide'
+import StorylineNav from './components/StorylineNav'
 import {
   generateAdvice,
   getBodyFatStatus, getVisceralFatStatus, getWaterStatus,
@@ -49,6 +50,24 @@ const skincareItems = [
   },
 ]
 
+const storylineSections = [
+  {
+    id: 'story-status',
+    label: '状态',
+    description: '核心指标 + 雷达 + 健康建议',
+  },
+  {
+    id: 'story-action',
+    label: '执行',
+    description: '训练 + 护肤 + 饮食',
+  },
+  {
+    id: 'story-trend',
+    label: '趋势',
+    description: '趋势图 + 历史记录',
+  },
+]
+
 export default function App() {
   return (
     <div className="min-h-screen bg-dark-900 text-slate-200 font-sans">
@@ -70,6 +89,8 @@ export default function App() {
           <span className="hidden md:inline">&nbsp;·&nbsp;</span>
           <span>今天：{todayLabel} / {todayTraining}</span>
         </div>
+
+        <StorylineNav sections={storylineSections} />
 
         <ReadingGuide weekday={todayLabel} trainingLabel={todayTraining} />
 
