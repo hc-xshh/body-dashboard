@@ -73,7 +73,7 @@ export default function App() {
 
         <ReadingGuide weekday={todayLabel} trainingLabel={todayTraining} />
 
-        <section>
+        <section id="story-status" className="scroll-mt-24">
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">核心指标</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <MetricCard label="体重" value={latest.weight} unit="kg" status="na" />
@@ -102,7 +102,7 @@ export default function App() {
           </div>
         </section>
 
-        <section className="grid lg:grid-cols-2 gap-6 items-stretch">
+        <section id="story-action" className="grid lg:grid-cols-2 gap-6 items-stretch scroll-mt-24">
           <div className="flex flex-col">
             <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">今日训练内容</h2>
             <DailyPlanPanel
@@ -132,7 +132,7 @@ export default function App() {
           </div>
         </section>
 
-        <section>
+        <section className="scroll-mt-24">
           <div className="flex flex-col">
             <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">今日推荐饮食</h2>
             <DailyPlanPanel
@@ -146,21 +146,21 @@ export default function App() {
           </div>
         </section>
 
-        <section>
+        <section id="story-trend" className="scroll-mt-24">
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">体重 & 体脂趋势</h2>
           <div className="bg-dark-800 rounded-xl p-4 border border-dark-600">
             <TrendChart data={measurements} metrics={trendMetrics1} />
           </div>
         </section>
 
-        <section>
+        <section className="scroll-mt-24">
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">肌肉 & 水分趋势</h2>
           <div className="bg-dark-800 rounded-xl p-4 border border-dark-600">
             <TrendChart data={measurements} metrics={trendMetrics2} />
           </div>
         </section>
 
-        <section>
+        <section className="scroll-mt-24">
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">历史记录</h2>
           <div className="bg-dark-800 rounded-xl border border-dark-600 overflow-x-auto">
             <table className="w-full text-sm">

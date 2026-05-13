@@ -3,14 +3,20 @@ export default function ReadingGuide({ weekday, trainingLabel }) {
     {
       title: '先看什么',
       text: '顶部先看体脂率、内脏脂肪、基础代谢，快速判断今天要不要更收一点饮食。',
+      target: '#story-status',
+      jumpLabel: '跳到 核心指标 + 雷达 + 健康建议',
     },
     {
       title: '再看执行',
       text: `今天是 ${weekday}，训练主题是「${trainingLabel}」。饮食和护肤模块都按今天而不是通用模板展示。`,
+      target: '#story-action',
+      jumpLabel: '跳到 今日训练 + 护肤 + 饮食',
     },
     {
       title: '最后看趋势',
       text: '如果当天状态正常，再下滑到趋势图和历史记录看变化，不用每次都先看整张表。',
+      target: '#story-trend',
+      jumpLabel: '跳到 趋势 + 历史记录',
     },
   ]
 
@@ -23,11 +29,16 @@ export default function ReadingGuide({ weekday, trainingLabel }) {
 
       <div className="grid md:grid-cols-3 gap-3">
         {guides.map((guide, index) => (
-          <div key={guide.title} className="rounded-xl border border-dark-700 bg-dark-900/50 px-4 py-4">
+          <a
+            key={guide.title}
+            href={guide.target}
+            className="rounded-xl border border-dark-700 bg-dark-900/50 px-4 py-4 transition hover:border-accent/50 hover:bg-dark-900 focus:outline-none focus:ring-2 focus:ring-accent/40"
+          >
             <div className="text-xs text-accent mb-2">0{index + 1}</div>
             <div className="text-sm font-medium text-white mb-1.5">{guide.title}</div>
             <p className="text-sm text-slate-400 leading-relaxed">{guide.text}</p>
-          </div>
+            <div className="mt-3 text-xs text-slate-500">{guide.jumpLabel}</div>
+          </a>
         ))}
       </div>
     </div>
