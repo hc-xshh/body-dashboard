@@ -31,6 +31,15 @@ const todayDate = new Intl.DateTimeFormat('en-CA', {
 }).format(new Date())
 
 const isUsingLatestMeasurement = latest.date === todayDate
+const measurementSyncBanner = isUsingLatestMeasurement
+  ? {
+      tone: 'emerald',
+      text: `今日体测已同步，当前建议基于 ${latest.date} ${latest.time ?? ''} 的最新数据生成。`,
+    }
+  : {
+      tone: 'amber',
+      text: `今日未同步新体测，当前沿用 ${latest.date} ${latest.time ?? ''} 的最近一次数据生成建议。`,
+    }
 
 const trendMetrics1 = [
   { key: 'weight', label: '体重(kg)' },
@@ -104,11 +113,24 @@ export default function App() {
               <span className="hidden sm:inline">今天：{todayLabel} / {todayTraining}</span>
             </div>
           </div>
-          {!isUsingLatestMeasurement && (
-            <div className="mt-3 rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs leading-relaxed text-amber-100 sm:text-sm">
-              今日未同步新体测，当前沿用 <span className="font-medium text-amber-50">{latest.date} {latest.time ?? ''}</span> 的最近一次数据生成建议。
-            </div>
-          )}
+          <div
+            className={`mt-3 rounded-lg border px-3 py-2 text-xs leading-relaxed sm:text-sm ${
+              measurementSyncBanner.tone === 'emerald'
+                ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-100'
+                : 'border-amber-500/20 bg-amber-500/10 text-amber-100'
+            }`}
+          >
+            <span
+              className={`mr-2 inline-block h-2 w-2 rounded-full ${
+                measurementSyncBanner.tone === 'emerald' ? 'bg-emerald-300' : 'bg-amber-300'
+              }`}
+            ></span>
+            <span
+              className={measurementSyncBanner.tone === 'emerald' ? 'font-medium text-emerald-50' : 'font-medium text-amber-50'}
+            >
+              {measurementSyncBanner.text}
+            </span>
+          </div>
         </div>
 
         <ReadingGuide weekday={todayLabel} trainingLabel={todayTraining} sections={storylineSections} />
