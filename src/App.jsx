@@ -16,7 +16,7 @@ const sorted = [...measurements].sort((a, b) => b.date.localeCompare(a.date))
 const latest = sorted[0]
 const prev = sorted[1] ?? null
 
-const advice = generateAdvice(latest, prev)
+const advice = generateAdvice(latest, prev, sorted)
 const todayLabel = getTodayLabel()
 const todayTraining = weeklyTrainingLabel[todayLabel] ?? '按周计划执行'
 const skincarePlan = getSkincarePlan(todayLabel)

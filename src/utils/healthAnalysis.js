@@ -1,3 +1,5 @@
+import { analyzeBodySignals } from './rulesEngine'
+
 // 判断指标状态
 export const STATUS = {
   GOOD: 'good',
@@ -50,50 +52,69 @@ export function getScoreStatus(v) {
 }
 
 // 生成健康建议
-export function generateAdvice(latest, prev) {
+export function generateAdvice(latest, prev, history = []) {
   const advice = []
+  const weekday = latest?.weekday ?? '周三'
+  const trainingContext = {
+    strengthDay: ['周一', '周二', '周四', '周五'].includes(weekday),
+    cardioDay: ['周三', '周六', '周日'].includes(weekday),
+    lowerBodyDay: weekday === '周二',
+    recoveryDay: ['周三', '周日'].includes(weekday),
+  }
+  const seriesHistory = history.length ? history : [latest, prev].filter(Boolean)
+  const analysis = analyzeBodySignals(latest, seriesHistory, trainingContext)
+  const { primaryMode, badge, confidence, evidence } = analysis.decision
 
-  // 体脂率
+  const modeAdvice = {
+    protect_metabolism: { level: 'warn', icon: '🛡️', text: '当前优先保护代谢与瘦体重：先稳住午餐、训练前补给和训练后蛋白，不因为短期波动继续激进减餐。' },
+    tighten_intake: { level: 'warn', icon: '✂️', text: '当前更适合收紧额外热量：优先削减下午加餐冗余、甜饮和晚间多余摄入，不动核心正餐蛋白。' },
+    recovery_first: { level: 'good', icon: '🧘', text: '当前更像恢复优先阶段：今天以恢复和稳定执行为主，不把恢复波动误判成必须大幅减量。' },
+    observe_noise: { level: 'warn', icon: '🫧', text: '当前数据噪声偏高：先看连续趋势，不根据单次高噪声指标波动做大动作。' },
+    hold_course: { level: 'good', icon: '✅', text: '当前方向基本正常：继续保持训练节律、蛋白摄入和晚间收口即可。' },
+  }
+
+  advice.push(modeAdvice[primaryMode] ?? modeAdvice.hold_course)
+  advice.push({
+    level: confidence >= 0.7 ? 'good' : confidence >= 0.55 ? 'warn' : 'bad',
+    icon: '🧭',
+    text: `主策略模式：${badge}（置信度 ${(confidence * 100).toFixed(0)}%）。${evidence.length ? `依据：${evidence.join('；')}` : '当前历史记录较少，按保守策略输出。'}`,
+  })
+
   if (latest.bodyFat != null) {
     if (latest.bodyFat > 22) {
-      advice.push({ level: 'bad', icon: '🔴', text: `体脂率 ${latest.bodyFat}% 偏高，建议每周保持 3 次以上有氧训练，控制精制碳水摄入。` })
+      advice.push({ level: 'bad', icon: '🔴', text: `体脂率 ${latest.bodyFat}% 偏高，重点不是极端少吃，而是减少甜饮、夜宵和额外油脂。` })
     } else if (latest.bodyFat > 20) {
-      advice.push({ level: 'warn', icon: '🟡', text: `体脂率 ${latest.bodyFat}% 轻度偏高，维持当前训练节奏，注意饮食油脂质量。` })
+      advice.push({ level: 'warn', icon: '🟡', text: `体脂率 ${latest.bodyFat}% 轻度偏高，维持训练节奏即可，优先保证饮食结构稳定。` })
     } else {
-      advice.push({ level: 'good', icon: '🟢', text: `体脂率 ${latest.bodyFat}% 处于正常区间，保持现有训练和饮食节律。` })
+      advice.push({ level: 'good', icon: '🟢', text: `体脂率 ${latest.bodyFat}% 处于正常区间，继续保持当前节律。` })
     }
   }
 
-  // 内脏脂肪
   if (latest.visceralFat != null && latest.visceralFat >= 10) {
-    advice.push({ level: 'warn', icon: '🟡', text: `内脏脂肪指数 ${latest.visceralFat}（偏高区间），建议增加有氧训练频率，减少晚餐热量，监控腰围变化。` })
+    advice.push({ level: 'warn', icon: '🟡', text: `内脏脂肪指数 ${latest.visceralFat} 偏高，建议继续增加有氧频率，并严格控制晚间额外摄入。` })
   }
 
-  // 水分
   if (latest.water != null && latest.water < 55) {
-    advice.push({ level: 'warn', icon: '💧', text: `水分 ${latest.water}% 偏低，每日饮水量建议 2000ml+，训练日追加 500ml，避免睡前2h大量饮水。` })
+    advice.push({ level: 'warn', icon: '💧', text: `水分 ${latest.water}% 偏低。水分属于高噪声指标，但连续偏低时仍应把分次补水执行到位。` })
   }
 
-  // 基础代谢
   if (latest.bmr != null && latest.bmr < 1550) {
-    advice.push({ level: 'warn', icon: '🔥', text: `基础代谢 ${latest.bmr} kcal 偏低，建议通过增肌训练（力量为主）拉升代谢基线，避免极低热量节食。` })
+    advice.push({ level: 'warn', icon: '🔥', text: `基础代谢 ${latest.bmr} kcal 偏低，建议优先保护午餐质量和训练后蛋白，避免继续压低热量。` })
   }
 
-  // 骨量
   if (latest.bone != null && latest.bone < 2.8) {
-    advice.push({ level: 'bad', icon: '🦴', text: `骨量 ${latest.bone} kg 不足，建议补充钙 + 维生素D3，增加负重训练频率，减少高盐高糖食品。` })
+    advice.push({ level: 'bad', icon: '🦴', text: `骨量 ${latest.bone} kg 不足，继续补钙并维持负重训练，单次波动不必过度解读。` })
   }
 
-  // 趋势建议（对比上次）
   if (prev) {
     const fatDelta = latest.bodyFat != null && prev.bodyFat != null ? latest.bodyFat - prev.bodyFat : null
     const muscleDelta = latest.muscle != null && prev.muscle != null ? latest.muscle - prev.muscle : null
 
     if (fatDelta != null && muscleDelta != null) {
       if (fatDelta < 0 && muscleDelta > 0) {
-        advice.push({ level: 'good', icon: '📈', text: `相比上次体脂 ${fatDelta.toFixed(1)}%、肌肉量 +${muscleDelta.toFixed(1)} kg，体成分正在向好方向改善！保持现有节律。` })
+        advice.push({ level: 'good', icon: '📈', text: `相比上次体脂 ${fatDelta.toFixed(1)}%、肌肉量 +${muscleDelta.toFixed(1)} kg，体成分方向在改善。` })
       } else if (fatDelta > 0.5 && muscleDelta < 0) {
-        advice.push({ level: 'bad', icon: '📉', text: `相比上次体脂 +${fatDelta.toFixed(1)}%、肌肉量 ${muscleDelta.toFixed(1)} kg，需检查近期饮食执行和训练质量。` })
+        advice.push({ level: 'bad', icon: '📉', text: `相比上次体脂 +${fatDelta.toFixed(1)}%、肌肉量 ${muscleDelta.toFixed(1)} kg，近期更需要检查饮食执行和恢复质量。` })
       }
     }
   }
