@@ -90,9 +90,9 @@ export default function App() {
           <span>今天：{todayLabel} / {todayTraining}</span>
         </div>
 
-        <StorylineNav sections={storylineSections} />
-
         <ReadingGuide weekday={todayLabel} trainingLabel={todayTraining} />
+
+        <StorylineNav sections={storylineSections} />
 
         <section id="story-status" className="scroll-mt-24">
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">核心指标</h2>

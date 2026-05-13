@@ -3,20 +3,29 @@ import { useEffect, useState } from 'react'
 function getActiveSection(sections) {
   if (typeof window === 'undefined') return sections[0]?.id ?? null
 
-  const threshold = 180
-  let current = sections[0]?.id ?? null
+  const anchorOffset = 220
+  const inView = sections
+    .map((section) => {
+      const element = document.getElementById(section.id)
+      if (!element) return null
 
-  for (const section of sections) {
-    const element = document.getElementById(section.id)
-    if (!element) continue
+      const rect = element.getBoundingClientRect()
+      return {
+        id: section.id,
+        top: rect.top,
+        distance: Math.abs(rect.top - anchorOffset),
+      }
+    })
+    .filter(Boolean)
 
-    const top = element.getBoundingClientRect().top
-    if (top <= threshold) {
-      current = section.id
-    }
+  if (!inView.length) return sections[0]?.id ?? null
+
+  const passed = inView.filter((section) => section.top <= anchorOffset)
+  if (passed.length) {
+    return passed.reduce((best, current) => (current.top > best.top ? current : best)).id
   }
 
-  return window.location.hash?.slice(1) || current
+  return inView.reduce((best, current) => (current.distance < best.distance ? current : best)).id
 }
 
 export default function StorylineNav({ sections }) {
