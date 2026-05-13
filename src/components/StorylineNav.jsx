@@ -61,10 +61,10 @@ export default function StorylineNav({ sections }) {
   }, [sections])
 
   return (
-    <nav className="sticky top-4 z-20">
-      <div className="rounded-2xl border border-dark-600/80 bg-dark-900/85 backdrop-blur px-3 py-3 shadow-lg shadow-black/20">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="px-2 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+    <nav className="sticky top-3 z-20 sm:top-4">
+      <div className="rounded-2xl border border-dark-600/80 bg-dark-900/85 px-2 py-2 shadow-lg shadow-black/20 backdrop-blur sm:px-3 sm:py-3">
+        <div className="storyline-scroll flex items-stretch gap-2 overflow-x-auto sm:flex-wrap sm:items-center sm:overflow-visible">
+          <div className="hidden px-2 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-slate-500 sm:block">
             Storyline
           </div>
           {sections.map((section, index) => {
@@ -75,7 +75,7 @@ export default function StorylineNav({ sections }) {
                 key={section.id}
                 href={`#${section.id}`}
                 className={[
-                  'group min-w-[120px] flex-1 rounded-xl border px-3 py-2 transition',
+                  'group min-w-[108px] shrink-0 rounded-xl border px-3 py-2 transition sm:min-w-[120px] sm:flex-1',
                   isActive
                     ? 'border-accent/70 bg-accent/12 text-white shadow-[0_0_0_1px_rgba(108,99,255,0.18)]'
                     : 'border-dark-600 bg-dark-800/80 text-slate-300 hover:border-accent/35 hover:bg-dark-700/70',
@@ -85,7 +85,7 @@ export default function StorylineNav({ sections }) {
                   0{index + 1}
                 </div>
                 <div className="mt-1 text-sm font-medium">{section.label}</div>
-                <div className="mt-1 text-xs text-slate-500 group-hover:text-slate-400">
+                <div className="mt-1 hidden text-xs text-slate-500 group-hover:text-slate-400 sm:block">
                   {section.description}
                 </div>
               </a>

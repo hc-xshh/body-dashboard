@@ -71,23 +71,38 @@ const storylineSections = [
 export default function App() {
   return (
     <div className="min-h-screen bg-dark-900 text-slate-200 font-sans">
-      <header className="border-b border-dark-700 px-6 py-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-white tracking-tight">Body Dashboard</h1>
-          <p className="text-xs text-slate-500 mt-0.5">Daemon · 身体数据可视化</p>
-        </div>
-        <div className="text-right">
-          <div className="text-2xl font-bold text-accent">{latest.score ?? '—'}</div>
-          <div className="text-xs text-slate-500">综合得分</div>
+      <header className="border-b border-dark-700 px-4 py-4 sm:px-6 sm:py-4">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-lg font-bold tracking-tight text-white sm:text-xl">Body Dashboard</h1>
+            <p className="mt-0.5 text-xs text-slate-500">Daemon · 身体数据可视化</p>
+          </div>
+          <div className="flex items-end justify-between rounded-xl border border-dark-600 bg-dark-800/70 px-3 py-2 sm:block sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:text-right">
+            <div className="text-xs uppercase tracking-[0.18em] text-slate-500 sm:hidden">综合得分</div>
+            <div className="text-2xl font-bold text-accent">{latest.score ?? '—'}</div>
+            <div className="hidden text-xs text-slate-500 sm:block">综合得分</div>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-6 flex flex-col gap-8">
-        <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
-          <span className="w-2 h-2 rounded-full bg-accent inline-block"></span>
-          最新记录：{latest.date} {latest.time ?? ''} &nbsp;·&nbsp; 体型：{latest.bodyType ?? '—'} &nbsp;·&nbsp; 身体年龄：{latest.bodyAge ?? '—'} 岁
-          <span className="hidden md:inline">&nbsp;·&nbsp;</span>
-          <span>今天：{todayLabel} / {todayTraining}</span>
+      <main className="mx-auto flex max-w-6xl flex-col gap-6 px-3 py-5 sm:px-4 sm:py-6 md:gap-8">
+        <div className="rounded-xl border border-dark-700 bg-dark-800/65 px-4 py-3 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
+          <div className="flex items-start gap-2 text-sm text-slate-400 sm:flex-wrap sm:items-center sm:text-sm sm:text-slate-500">
+            <span className="mt-1 inline-block h-2 w-2 rounded-full bg-accent sm:mt-0"></span>
+            <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
+              <div className="leading-relaxed">
+                <span className="text-slate-500">最新记录：</span>{latest.date} {latest.time ?? ''}
+                <span className="hidden sm:inline"> &nbsp;·&nbsp; 体型：{latest.bodyType ?? '—'} &nbsp;·&nbsp; 身体年龄：{latest.bodyAge ?? '—'} 岁</span>
+              </div>
+              <div className="flex flex-wrap gap-2 text-xs sm:hidden">
+                <span className="rounded-full border border-dark-600 bg-dark-900/70 px-2.5 py-1 text-slate-300">体型：{latest.bodyType ?? '—'}</span>
+                <span className="rounded-full border border-dark-600 bg-dark-900/70 px-2.5 py-1 text-slate-300">身体年龄：{latest.bodyAge ?? '—'} 岁</span>
+                <span className="rounded-full border border-accent/25 bg-accent/10 px-2.5 py-1 text-accent-light">今天：{todayLabel} / {todayTraining}</span>
+              </div>
+              <span className="hidden md:inline">&nbsp;·&nbsp;</span>
+              <span className="hidden sm:inline">今天：{todayLabel} / {todayTraining}</span>
+            </div>
+          </div>
         </div>
 
         <ReadingGuide weekday={todayLabel} trainingLabel={todayTraining} />

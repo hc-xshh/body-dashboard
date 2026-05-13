@@ -7,14 +7,14 @@ export default function DailyPlanPanel({ title, subtitle, items = [], reminders 
   }
 
   return (
-    <div className="bg-dark-800 rounded-xl border border-dark-600 p-5 h-full">
-      <div className="flex items-start justify-between gap-3 mb-4">
+    <div className="bg-dark-800 rounded-xl border border-dark-600 p-4 h-full sm:p-5">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h3 className="text-base font-semibold text-white">{title}</h3>
-          {subtitle && <p className="text-sm text-slate-400 mt-1 leading-relaxed">{subtitle}</p>}
+          {subtitle && <p className="mt-1 text-sm leading-relaxed text-slate-400">{subtitle}</p>}
         </div>
         {badge && (
-          <span className={`text-xs px-2.5 py-1 rounded-full border whitespace-nowrap ${badgeStyles[accent] ?? badgeStyles.accent}`}>
+          <span className={`inline-flex w-fit text-xs px-2.5 py-1 rounded-full border whitespace-nowrap ${badgeStyles[accent] ?? badgeStyles.accent}`}>
             {badge}
           </span>
         )}
@@ -22,16 +22,16 @@ export default function DailyPlanPanel({ title, subtitle, items = [], reminders 
 
       <div className={compact ? 'space-y-3' : 'space-y-4'}>
         {items.map((item, index) => (
-          <div key={`${item.title}-${index}`} className="rounded-xl border border-dark-700 bg-dark-900/50 px-4 py-3">
-            <div className="flex items-center justify-between gap-3 mb-1.5">
+          <div key={`${item.title}-${index}`} className="rounded-xl border border-dark-700 bg-dark-900/50 px-3.5 py-3 sm:px-4">
+            <div className="mb-1.5 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
               <div className="text-sm font-medium text-white">{item.title}</div>
-              {item.time && <div className="text-xs text-slate-500 whitespace-nowrap">{item.time}</div>}
+              {item.time && <div className="text-xs text-slate-500 sm:whitespace-nowrap">{item.time}</div>}
             </div>
-            {item.detail && <p className="text-sm text-slate-300 leading-relaxed">{item.detail}</p>}
-            {item.emphasis && <p className="text-xs text-amber-300 mt-2 leading-relaxed">{item.emphasis}</p>}
-            {item.note && <p className="text-xs text-slate-500 mt-2 leading-relaxed">{item.note}</p>}
+            {item.detail && <p className="text-sm leading-relaxed text-slate-300">{item.detail}</p>}
+            {item.emphasis && <p className="mt-2 text-xs leading-relaxed text-amber-300">{item.emphasis}</p>}
+            {item.note && <p className="mt-2 text-xs leading-relaxed text-slate-500">{item.note}</p>}
             {item.steps?.length ? (
-              <ol className="mt-2 space-y-1 text-sm text-slate-300 leading-relaxed list-decimal list-inside">
+              <ol className="mt-2 list-inside list-decimal space-y-1.5 text-sm leading-relaxed text-slate-300">
                 {item.steps.map((step, stepIndex) => (
                   <li key={`${item.title}-step-${stepIndex}`}>{step}</li>
                 ))}
@@ -42,9 +42,9 @@ export default function DailyPlanPanel({ title, subtitle, items = [], reminders 
       </div>
 
       {!!reminders.length && (
-        <div className="mt-4 pt-4 border-t border-dark-700">
-          <div className="text-xs uppercase tracking-widest text-slate-500 mb-2">阅读友好提示</div>
-          <ul className="space-y-1.5 text-sm text-slate-400 leading-relaxed">
+        <div className="mt-4 border-t border-dark-700 pt-4">
+          <div className="mb-2 text-xs uppercase tracking-widest text-slate-500">阅读友好提示</div>
+          <ul className="space-y-2 text-sm leading-relaxed text-slate-400">
             {reminders.map((text, index) => (
               <li key={`${text}-${index}`} className="flex gap-2">
                 <span className="text-slate-600">•</span>

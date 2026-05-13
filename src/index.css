@@ -17,3 +17,12 @@ body {
   background-color: #0f1117;
   font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
 }
+
+.storyline-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.storyline-scroll::-webkit-scrollbar {
+  display: none;
+}

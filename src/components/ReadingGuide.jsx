@@ -21,23 +21,23 @@ export default function ReadingGuide({ weekday, trainingLabel }) {
   ]
 
   return (
-    <div className="bg-dark-800 rounded-xl border border-dark-600 p-5">
+    <div className="bg-dark-800 rounded-xl border border-dark-600 p-4 sm:p-5">
       <div className="mb-4">
-        <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-2">阅读引导</h2>
-        <p className="text-sm text-slate-400 leading-relaxed">把页面拆成「判断状态 → 看今天该做什么 → 再看长期趋势」，减少来回找信息。</p>
+        <h2 className="mb-2 text-sm font-semibold uppercase tracking-widest text-slate-400">阅读引导</h2>
+        <p className="text-sm leading-relaxed text-slate-400">把页面拆成「判断状态 → 看今天该做什么 → 再看长期趋势」，减少来回找信息。</p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-3">
+      <div className="grid gap-3 md:grid-cols-3">
         {guides.map((guide, index) => (
           <a
             key={guide.title}
             href={guide.target}
-            className="rounded-xl border border-dark-700 bg-dark-900/50 px-4 py-4 transition hover:border-accent/50 hover:bg-dark-900 focus:outline-none focus:ring-2 focus:ring-accent/40"
+            className="rounded-xl border border-dark-700 bg-dark-900/50 px-4 py-4 transition hover:border-accent/50 hover:bg-dark-900 focus:outline-none focus:ring-2 focus:ring-accent/40 sm:px-4 sm:py-4"
           >
-            <div className="text-xs text-accent mb-2">0{index + 1}</div>
-            <div className="text-sm font-medium text-white mb-1.5">{guide.title}</div>
-            <p className="text-sm text-slate-400 leading-relaxed">{guide.text}</p>
-            <div className="mt-3 text-xs text-slate-500">{guide.jumpLabel}</div>
+            <div className="mb-2 text-xs text-accent">0{index + 1}</div>
+            <div className="mb-1.5 text-sm font-medium text-white">{guide.title}</div>
+            <p className="text-sm leading-relaxed text-slate-400">{guide.text}</p>
+            <div className="mt-3 text-xs leading-relaxed text-slate-500">{guide.jumpLabel}</div>
           </a>
         ))}
       </div>
