@@ -30,6 +30,8 @@ npm run dev
 
 > 当前对外只保留 Cloudflare Pages 地址作为正式访问入口：
 > `https://body-dashboard.pages.dev`
+>
+> Vercel 已移除，不再作为部署平台或访问入口。
 
 ## 技术栈
 
