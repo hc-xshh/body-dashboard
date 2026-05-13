@@ -1,6 +1,6 @@
 import ReactECharts from 'echarts-for-react'
 
-export default function RadarChart({ latest }) {
+export default function RadarChart({ latest, height = 260 }) {
   const indicators = [
     { name: '肌肉量', max: 60 },
     { name: '骨骼肌率', max: 50 },
@@ -42,5 +42,5 @@ export default function RadarChart({ latest }) {
     }],
   }
 
-  return <ReactECharts option={option} style={{ height: '260px' }} opts={{ renderer: 'svg' }} />
+  return <ReactECharts option={option} style={{ height: `${height}px`, width: '100%' }} opts={{ renderer: 'svg' }} />
 }

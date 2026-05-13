@@ -5,7 +5,7 @@ export default function AdvicePanel({ advice }) {
   const text = { good: 'text-green-400', warn: 'text-amber-400', bad: 'text-red-400' }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex h-full flex-col gap-3">
       {advice.map((a, i) => (
         <div key={i} className={`rounded-xl p-4 border ${bg[a.level] ?? 'bg-dark-800 border-dark-600'} flex gap-3 items-start`}>
           <span className="text-xl flex-shrink-0">{a.icon}</span>

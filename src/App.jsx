@@ -3,17 +3,25 @@ import TrendChart from './components/TrendChart'
 import RadarChart from './components/RadarChart'
 import MetricCard from './components/MetricCard'
 import AdvicePanel from './components/AdvicePanel'
+import DailyPlanPanel from './components/DailyPlanPanel'
+import ReadingGuide from './components/ReadingGuide'
 import {
   generateAdvice,
   getBodyFatStatus, getVisceralFatStatus, getWaterStatus,
   getBMRStatus, getBoneStatus, getScoreStatus
 } from './utils/healthAnalysis'
+import { getDietPlan, getSkincarePlan, getTodayLabel, getTrainingPlan, weeklyTrainingLabel } from './data/dailyPlans'
 
 const sorted = [...measurements].sort((a, b) => b.date.localeCompare(a.date))
 const latest = sorted[0]
 const prev = sorted[1] ?? null
 
 const advice = generateAdvice(latest, prev)
+const todayLabel = getTodayLabel()
+const todayTraining = weeklyTrainingLabel[todayLabel] ?? '按周计划执行'
+const skincarePlan = getSkincarePlan(todayLabel)
+const trainingPlan = getTrainingPlan(todayLabel)
+const dietPlan = getDietPlan(latest, todayLabel, todayTraining, sorted)
 
 const trendMetrics1 = [
   { key: 'weight', label: '体重(kg)' },
@@ -25,10 +33,25 @@ const trendMetrics2 = [
   { key: 'leanBodyMass', label: '去脂体重(kg)' },
 ]
 
+const skincareItems = [
+  {
+    title: '晨间流程',
+    time: '出门前',
+    detail: '温和控油 + 美白 + 防晒，作为每天固定流程。',
+    steps: skincarePlan.morning,
+  },
+  {
+    title: `夜间流程 · ${skincarePlan.evening.theme}`,
+    time: skincarePlan.evening.duration,
+    detail: skincarePlan.evening.emphasis ?? skincarePlan.evening.note,
+    steps: skincarePlan.evening.steps,
+    note: skincarePlan.evening.note,
+  },
+]
+
 export default function App() {
   return (
     <div className="min-h-screen bg-dark-900 text-slate-200 font-sans">
-      {/* Header */}
       <header className="border-b border-dark-700 px-6 py-4 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-white tracking-tight">Body Dashboard</h1>
@@ -40,15 +63,16 @@ export default function App() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-6 flex flex-col gap-8">
-
-        {/* 最新测量时间 */}
-        <div className="flex items-center gap-2 text-sm text-slate-500">
+      <main className="max-w-6xl mx-auto px-4 py-6 flex flex-col gap-8">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
           <span className="w-2 h-2 rounded-full bg-accent inline-block"></span>
           最新记录：{latest.date} {latest.time ?? ''} &nbsp;·&nbsp; 体型：{latest.bodyType ?? '—'} &nbsp;·&nbsp; 身体年龄：{latest.bodyAge ?? '—'} 岁
+          <span className="hidden md:inline">&nbsp;·&nbsp;</span>
+          <span>今天：{todayLabel} / {todayTraining}</span>
         </div>
 
-        {/* 核心指标卡片 */}
+        <ReadingGuide weekday={todayLabel} trainingLabel={todayTraining} />
+
         <section>
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">核心指标</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -63,7 +87,62 @@ export default function App() {
           </div>
         </section>
 
-        {/* 趋势图 */}
+        <section className="grid md:grid-cols-2 gap-6 items-stretch">
+          <div className="flex flex-col">
+            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">身体成分雷达</h2>
+            <div className="bg-dark-800 rounded-xl p-4 border border-dark-600 flex-1 min-h-[360px] flex items-center">
+              <RadarChart latest={latest} height={320} />
+            </div>
+          </div>
+          <div className="flex flex-col">
+            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">健康建议</h2>
+            <div className="bg-dark-800 rounded-xl p-4 border border-dark-600 flex-1 min-h-[360px]">
+              <AdvicePanel advice={advice} />
+            </div>
+          </div>
+        </section>
+
+        <section className="grid xl:grid-cols-3 gap-6 items-stretch">
+          <div className="flex flex-col">
+            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">今日训练内容</h2>
+            <DailyPlanPanel
+              title={`${todayLabel} 训练执行单`}
+              subtitle={trainingPlan.subtitle}
+              items={trainingPlan.items}
+              reminders={[
+                '先完成今天卡片里的内容，再去看趋势图，不要反过来。',
+                '恢复日也算执行日，今天的目标是促进恢复，不是硬凑训练量。',
+              ]}
+              badge={trainingPlan.badge}
+              accent="rose"
+              compact
+            />
+          </div>
+          <div className="flex flex-col">
+            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">今日推荐饮食</h2>
+            <DailyPlanPanel
+              title={`${todayLabel} 饮食执行单`}
+              subtitle={dietPlan.subtitle}
+              items={dietPlan.items}
+              reminders={dietPlan.reminders}
+              badge={dietPlan.badge}
+              accent="emerald"
+            />
+          </div>
+          <div className="flex flex-col">
+            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">今日护肤流程</h2>
+            <DailyPlanPanel
+              title={`${todayLabel} 护肤流程`}
+              subtitle="按周计划自动切到当天版本，直接照着做即可。"
+              items={skincareItems}
+              reminders={skincarePlan.reminders}
+              badge={skincarePlan.evening.theme}
+              accent="sky"
+              compact
+            />
+          </div>
+        </section>
+
         <section>
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">体重 & 体脂趋势</h2>
           <div className="bg-dark-800 rounded-xl p-4 border border-dark-600">
@@ -78,21 +157,6 @@ export default function App() {
           </div>
         </section>
 
-        {/* 雷达图 + 建议 并排 */}
-        <section className="grid md:grid-cols-2 gap-6">
-          <div>
-            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">身体成分雷达</h2>
-            <div className="bg-dark-800 rounded-xl p-4 border border-dark-600">
-              <RadarChart latest={latest} />
-            </div>
-          </div>
-          <div>
-            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">健康建议</h2>
-            <AdvicePanel advice={advice} />
-          </div>
-        </section>
-
-        {/* 历史记录表 */}
         <section>
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">历史记录</h2>
           <div className="bg-dark-800 rounded-xl border border-dark-600 overflow-x-auto">
@@ -124,7 +188,7 @@ export default function App() {
         </section>
 
         <footer className="text-center text-xs text-slate-700 pb-4">
-          数据由 Hermes Agent 自动解析体测截图生成 · 仅供个人参考
+          数据由 Hermes Agent 自动解析体测截图生成 · 饮食/训练/护肤建议基于 Obsidian 现有方案 + 当日体测动态展示 · 仅供个人参考
         </footer>
       </main>
     </div>
