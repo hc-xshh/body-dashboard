@@ -3,29 +3,40 @@ import { useEffect, useState } from 'react'
 function getActiveSection(sections) {
   if (typeof window === 'undefined') return sections[0]?.id ?? null
 
-  const anchorOffset = 220
-  const inView = sections
+  const viewportHeight = window.innerHeight
+  const visibleSections = sections
     .map((section) => {
       const element = document.getElementById(section.id)
       if (!element) return null
 
       const rect = element.getBoundingClientRect()
+      const visibleTop = Math.max(rect.top, 0)
+      const visibleBottom = Math.min(rect.bottom, viewportHeight)
+      const visibleHeight = Math.max(0, visibleBottom - visibleTop)
+
       return {
         id: section.id,
         top: rect.top,
-        distance: Math.abs(rect.top - anchorOffset),
+        visibleHeight,
       }
     })
     .filter(Boolean)
 
-  if (!inView.length) return sections[0]?.id ?? null
+  if (!visibleSections.length) return sections[0]?.id ?? null
 
-  const passed = inView.filter((section) => section.top <= anchorOffset)
-  if (passed.length) {
-    return passed.reduce((best, current) => (current.top > best.top ? current : best)).id
+  const visible = visibleSections.filter((section) => section.visibleHeight > 0)
+  if (visible.length) {
+    return visible.reduce((best, current) => {
+      if (current.visibleHeight === best.visibleHeight) {
+        return current.top < best.top ? current : best
+      }
+      return current.visibleHeight > best.visibleHeight ? current : best
+    }).id
   }
 
-  return inView.reduce((best, current) => (current.distance < best.distance ? current : best)).id
+  return visibleSections.reduce((best, current) => (
+    Math.abs(current.top) < Math.abs(best.top) ? current : best
+  )).id
 }
 
 export default function StorylineNav({ sections }) {
