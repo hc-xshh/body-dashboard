@@ -102,7 +102,7 @@ export default function App() {
           </div>
         </section>
 
-        <section className="grid xl:grid-cols-3 gap-6 items-stretch">
+        <section className="grid lg:grid-cols-2 gap-6 items-stretch">
           <div className="flex flex-col">
             <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">今日训练内容</h2>
             <DailyPlanPanel
@@ -119,17 +119,6 @@ export default function App() {
             />
           </div>
           <div className="flex flex-col">
-            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">今日推荐饮食</h2>
-            <DailyPlanPanel
-              title={`${todayLabel} 饮食执行单`}
-              subtitle={dietPlan.subtitle}
-              items={dietPlan.items}
-              reminders={dietPlan.reminders}
-              badge={dietPlan.badge}
-              accent="emerald"
-            />
-          </div>
-          <div className="flex flex-col">
             <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">今日护肤流程</h2>
             <DailyPlanPanel
               title={`${todayLabel} 护肤流程`}
@@ -139,6 +128,20 @@ export default function App() {
               badge={skincarePlan.evening.theme}
               accent="sky"
               compact
+            />
+          </div>
+        </section>
+
+        <section>
+          <div className="flex flex-col">
+            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">今日推荐饮食</h2>
+            <DailyPlanPanel
+              title={`${todayLabel} 饮食执行单`}
+              subtitle={dietPlan.subtitle}
+              items={dietPlan.items}
+              reminders={dietPlan.reminders}
+              badge={dietPlan.badge}
+              accent="emerald"
             />
           </div>
         </section>
