@@ -23,6 +23,15 @@ const skincarePlan = getSkincarePlan(todayLabel)
 const trainingPlan = getTrainingPlan(todayLabel)
 const dietPlan = getDietPlan(latest, todayLabel, todayTraining, sorted)
 
+const todayDate = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'Asia/Shanghai',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+}).format(new Date())
+
+const isUsingLatestMeasurement = latest.date === todayDate
+
 const trendMetrics1 = [
   { key: 'weight', label: '体重(kg)' },
   { key: 'bodyFat', label: '体脂率(%)' },
@@ -95,6 +104,11 @@ export default function App() {
               <span className="hidden sm:inline">今天：{todayLabel} / {todayTraining}</span>
             </div>
           </div>
+          {!isUsingLatestMeasurement && (
+            <div className="mt-3 rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs leading-relaxed text-amber-100 sm:text-sm">
+              今日未同步新体测，当前沿用 <span className="font-medium text-amber-50">{latest.date} {latest.time ?? ''}</span> 的最近一次数据生成建议。
+            </div>
+          )}
         </div>
 
         <ReadingGuide weekday={todayLabel} trainingLabel={todayTraining} sections={storylineSections} />
