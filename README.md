@@ -2,6 +2,8 @@
 
 Daemon 的身体数据可视化项目。自动解析体测截图，生成健康趋势图表和建议。
 
+**正式线上地址**：`https://body-dashboard.pages.dev`
+
 ## 功能
 
 - 📊 体重 & 体脂率趋势折线图
@@ -24,7 +26,10 @@ npm run dev
 
 ## 部署
 
-推送到 main 分支后，Vercel 自动构建部署。
+推送到 `main` 分支后，由 **Cloudflare Pages** 自动构建部署。
+
+> 当前对外只保留 Cloudflare Pages 地址作为正式访问入口：
+> `https://body-dashboard.pages.dev`
 
 ## 技术栈
 
