@@ -213,3 +213,30 @@ test('tightens intake when weight and fat both sit above baseline band even with
   assert.equal(result.decision.stateStage, 'fat_gain_control')
   assert.ok(result.signals.some(signal => signal.key === 'intake_tightening_needed'))
 })
+
+test('does not default to recovery_first on recovery day when body fat sits above baseline band', () => {
+  const history = [
+    { date: '2026-05-26', weight: 68.0, bodyFat: 21.4, muscle: 51.0, water: 54.0, bmr: 1520, visceralFat: 9 },
+    { date: '2026-05-23', weight: 68.05, bodyFat: 21.0, muscle: 51.0, water: 54.1, bmr: 1521, visceralFat: 9 },
+    { date: '2026-05-20', weight: 68.0, bodyFat: 20.9, muscle: 51.1, water: 54.2, bmr: 1521, visceralFat: 9 },
+    { date: '2026-05-17', weight: 68.0, bodyFat: 20.9, muscle: 51.1, water: 54.2, bmr: 1522, visceralFat: 9 },
+    { date: '2026-05-14', weight: 67.95, bodyFat: 20.9, muscle: 51.2, water: 54.3, bmr: 1522, visceralFat: 9 },
+    { date: '2026-05-11', weight: 67.95, bodyFat: 20.8, muscle: 51.2, water: 54.3, bmr: 1523, visceralFat: 9 },
+    { date: '2026-05-08', weight: 67.9, bodyFat: 20.8, muscle: 51.3, water: 54.4, bmr: 1523, visceralFat: 9 },
+    { date: '2026-05-05', weight: 67.9, bodyFat: 20.8, muscle: 51.3, water: 54.4, bmr: 1524, visceralFat: 9 },
+  ]
+
+  const result = analyzeBodySignals(history[0], history, {
+    strengthDay: false,
+    cardioDay: true,
+    lowerBodyDay: false,
+    recoveryDay: true,
+  })
+
+  assert.equal(result.features.bodyFat.baselinePosition, 'above_band')
+  assert.equal(result.features.weight.baselinePosition, 'within_band')
+  assert.equal(result.features.weight.delta3 <= 0.2, true)
+  assert.equal(result.decision.primaryMode, 'tighten_intake')
+  assert.equal(result.decision.stateStage, 'fat_gain_control')
+  assert.ok(result.signals.some(signal => signal.key === 'intake_tightening_needed'))
+})
