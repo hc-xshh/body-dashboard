@@ -56,6 +56,20 @@ function getMedian(series, size = series.length) {
     : values[mid]
 }
 
+function getPercentile(series, percentile, size = series.length) {
+  const values = series.slice(0, size).slice().sort((a, b) => a - b)
+  if (!values.length) return null
+  if (values.length === 1) return values[0]
+
+  const index = (values.length - 1) * percentile
+  const lowerIndex = Math.floor(index)
+  const upperIndex = Math.ceil(index)
+  if (lowerIndex === upperIndex) return values[lowerIndex]
+
+  const weight = index - lowerIndex
+  return round(values[lowerIndex] + (values[upperIndex] - values[lowerIndex]) * weight)
+}
+
 function getBaselineDeviation(latest, series, size = 8) {
   if (latest == null) return null
   const baseline = getMedian(series.slice(1), size)
@@ -86,6 +100,30 @@ function getWindowSnapshot(series, size) {
 
 function getBaseline(series, size = 10) {
   return getMedian(series.slice(1), size)
+}
+
+function getBaselineBand(series, size = 10) {
+  const values = series.slice(1, size + 1)
+  if (values.length < 4) return null
+
+  const low = getPercentile(values, 0.25)
+  const mid = getMedian(values)
+  const high = getPercentile(values, 0.75)
+  if (low == null || mid == null || high == null) return null
+
+  return {
+    low,
+    mid,
+    high,
+    width: round(high - low),
+  }
+}
+
+function getBaselinePosition(latestValue, baselineBand) {
+  if (latestValue == null || !baselineBand) return null
+  if (latestValue < baselineBand.low) return 'below_band'
+  if (latestValue > baselineBand.high) return 'above_band'
+  return 'within_band'
 }
 
 function getConfidence(key, seriesLength, evidenceCount = 0) {
@@ -156,9 +194,11 @@ function getModeMeta(primaryMode, stateStage) {
 
 function buildMetricFeatures(latestValue, series, { shortWindow = 4, mediumWindow = 8, longWindow = 10 } = {}) {
   const baseline28 = getBaseline(series, longWindow)
+  const baselineBand28 = getBaselineBand(series, longWindow)
   const short = getWindowSnapshot(series, shortWindow)
   const medium = getWindowSnapshot(series, mediumWindow)
   const long = getWindowSnapshot(series, longWindow)
+  const baselinePosition = getBaselinePosition(latestValue, baselineBand28)
 
   return {
     latest: latestValue ?? null,
@@ -175,6 +215,9 @@ function buildMetricFeatures(latestValue, series, { shortWindow = 4, mediumWindo
     window14: medium,
     window28: long,
     baseline28,
+    baselineBand28,
+    baselinePosition,
+    withinBaselineBand: baselinePosition === 'within_band',
     deviationFromBaseline28: baseline28 == null || latestValue == null ? null : round(latestValue - baseline28),
   }
 }
@@ -188,8 +231,16 @@ function collectEvidenceGroups(features, signals, stateStage) {
   if (features.bodyFat.baseline28 != null && features.bodyFat.deviationFromBaseline28 != null) {
     baseline.push(`体脂相对个人基线 ${formatSigned(features.bodyFat.deviationFromBaseline28, 1, '%')}`)
   }
+  if (features.bodyFat.baselineBand28) {
+    const { low, high } = features.bodyFat.baselineBand28
+    baseline.push(`体脂个人波动带 ${low.toFixed(1)}% - ${high.toFixed(1)}%，当前处于${features.bodyFat.baselinePosition === 'above_band' ? '带外偏高' : features.bodyFat.baselinePosition === 'below_band' ? '带外偏低' : '带内'}`)
+  }
   if (features.weight.baseline28 != null && features.weight.deviationFromBaseline28 != null) {
     baseline.push(`体重相对个人基线 ${formatSigned(features.weight.deviationFromBaseline28, 1, 'kg')}`)
+  }
+  if (features.weight.baselineBand28) {
+    const { low, high } = features.weight.baselineBand28
+    baseline.push(`体重个人波动带 ${low.toFixed(1)} - ${high.toFixed(1)}kg，当前处于${features.weight.baselinePosition === 'above_band' ? '带外偏高' : features.weight.baselinePosition === 'below_band' ? '带外偏低' : '带内'}`)
   }
   if (features.bodyFat.window28.count >= 6) {
     baseline.push(`长窗口已覆盖 ${features.bodyFat.window28.count} 次记录，判断不只看最近 1-2 次波动`)
@@ -259,6 +310,33 @@ function getPrimaryMode(signals, trainingContext, stateStage) {
   if (keys.has('noise_high')) return trainingContext.recoveryDay ? 'recovery_first' : 'observe_noise'
   if (trainingContext.recoveryDay) return 'recovery_first'
   return 'hold_course'
+}
+
+function getTrainingLoad(trainingContext = {}) {
+  if (trainingContext.lowerBodyDay) {
+    return { trainingLoad: 'lower_body_strength', trainingLoadLabel: '下肢力量日' }
+  }
+  if (trainingContext.strengthDay) {
+    return { trainingLoad: 'upper_body_strength', trainingLoadLabel: '力量日' }
+  }
+  if (trainingContext.recoveryDay && trainingContext.cardioDay) {
+    return { trainingLoad: 'mixed', trainingLoadLabel: '恢复 + 有氧日' }
+  }
+  if (trainingContext.recoveryDay) {
+    return { trainingLoad: 'recovery', trainingLoadLabel: '恢复日' }
+  }
+  if (trainingContext.cardioDay) {
+    return { trainingLoad: 'cardio', trainingLoadLabel: '有氧日' }
+  }
+  return { trainingLoad: 'general', trainingLoadLabel: '常规执行日' }
+}
+
+function getIntakeStrategy(primaryMode, trainingContext) {
+  if (primaryMode === 'protect_metabolism') return 'protect_recovery'
+  if (primaryMode === 'tighten_intake') return 'trim_extras'
+  if (primaryMode === 'recovery_first') return 'protect_recovery'
+  if (trainingContext.strengthDay || trainingContext.lowerBodyDay) return 'support_training'
+  return 'hold_steady'
 }
 
 export function analyzeBodySignals(latest, history = [], trainingContext = {}) {
@@ -469,6 +547,8 @@ export function analyzeBodySignals(latest, history = [], trainingContext = {}) {
   const stateStage = getStateStage(signals, trainingContext, features)
   const primaryMode = getPrimaryMode(signals, trainingContext, stateStage)
   const modeMeta = getModeMeta(primaryMode, stateStage)
+  const { trainingLoad, trainingLoadLabel } = getTrainingLoad(trainingContext)
+  const intakeStrategy = getIntakeStrategy(primaryMode, trainingContext)
   const evidenceGroups = collectEvidenceGroups(features, signals, stateStage)
   const secondaryFlags = signals
     .filter(signal => !['metabolism_protection_needed', 'noise_high'].includes(signal.key))
@@ -502,6 +582,9 @@ export function analyzeBodySignals(latest, history = [], trainingContext = {}) {
       confidence,
       evidence,
       evidenceGroups,
+      trainingLoad,
+      trainingLoadLabel,
+      intakeStrategy,
       ...modeMeta,
     },
   }

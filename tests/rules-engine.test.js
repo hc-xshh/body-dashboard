@@ -130,3 +130,31 @@ test('uses baseline context to classify recovery rebound instead of over-tighten
   assert.equal(result.decision.stateStage, 'rebound_recovery')
   assert.ok(result.decision.evidenceGroups.baseline.some(item => item.includes('个人基线')))
 })
+
+test('exposes baseline band and training load semantics for phase 3A decisions', () => {
+  const history = [
+    { date: '2026-05-13', weight: 68.35, bodyFat: 22.4, muscle: 50.4, water: 53.2, bmr: 1514, visceralFat: 10 },
+    { date: '2026-05-12', weight: 68.85, bodyFat: 21.0, muscle: 51.7, water: 54.1, bmr: 1521, visceralFat: 10 },
+    { date: '2026-05-08', weight: 68.80, bodyFat: 22.5, muscle: 50.7, water: 53.1, bmr: 1521, visceralFat: 10 },
+    { date: '2026-05-06', weight: 68.20, bodyFat: 21.0, muscle: 51.5, water: 54.1, bmr: 1528, visceralFat: 10 },
+    { date: '2026-04-30', weight: 68.40, bodyFat: 22.5, muscle: 50.8, water: 53.1, bmr: 1520, visceralFat: 10 },
+    { date: '2026-04-23', weight: 67.10, bodyFat: 20.3, muscle: 50.8, water: 54.2, bmr: 1498, visceralFat: 10 },
+    { date: '2026-04-15', weight: 68.35, bodyFat: 22.5, muscle: 50.3, water: 53.1, bmr: 1514, visceralFat: 10 },
+    { date: '2026-04-14', weight: 69.10, bodyFat: 22.2, muscle: 51.1, water: 53.3, bmr: 1524, visceralFat: 10 },
+  ]
+
+  const result = analyzeBodySignals(history[0], history, {
+    strengthDay: true,
+    cardioDay: false,
+    lowerBodyDay: true,
+    recoveryDay: false,
+  })
+
+  assert.ok(result.features.bodyFat.baselineBand28)
+  assert.equal(result.features.bodyFat.baselinePosition, 'within_band')
+  assert.equal(result.features.weight.withinBaselineBand, true)
+  assert.equal(result.decision.trainingLoad, 'lower_body_strength')
+  assert.equal(result.decision.trainingLoadLabel, '下肢力量日')
+  assert.equal(result.decision.stateStage, 'muscle_protection')
+  assert.equal(result.decision.intakeStrategy, 'protect_recovery')
+})

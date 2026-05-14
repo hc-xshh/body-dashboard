@@ -227,7 +227,7 @@ export function getDietPlan(latest, weekday, trainingLabel, history = []) {
   const trainingContext = { strengthDay, cardioDay, lowerBodyDay, recoveryDay }
 
   const rules = analyzeBodySignals(latest, history, trainingContext)
-  const { primaryMode, evidence, confidence, badge: decisionBadge, summary, stageLabel, evidenceGroups } = rules.decision
+  const { primaryMode, evidence, confidence, badge: decisionBadge, summary, stageLabel, evidenceGroups, trainingLoadLabel, intakeStrategy } = rules.decision
   const strategySignals = []
   const trendSignals = []
   const bodyFocus = []
@@ -336,6 +336,20 @@ export function getDietPlan(latest, weekday, trainingLabel, history = []) {
     evidenceGroups?.trend?.[0],
   ].filter(Boolean).join('；')
 
+  const baselineBandSummary = [
+    evidenceGroups?.baseline?.find(item => item.includes('波动带')),
+    evidenceGroups?.baseline?.find(item => item.includes('相对个人基线')),
+  ].filter(Boolean).join('；')
+
+  if (baselineBandSummary) {
+    items.unshift({
+      time: '基线带',
+      title: '个人波动带位置',
+      detail: `${baselineBandSummary}。`,
+      note: `当前训练负荷：${trainingLoadLabel}；今日 intake 策略：${intakeStrategy}。`,
+    })
+  }
+
   if (longWindowSummary) {
     items.unshift({
       time: '长窗口',
@@ -349,7 +363,7 @@ export function getDietPlan(latest, weekday, trainingLabel, history = []) {
     time: '今日策略',
     title: '主策略模式',
     detail: summary,
-    emphasis: `当前模式：${decisionBadge} · ${stageLabel} · 置信度 ${(confidence * 100).toFixed(0)}%`,
+    emphasis: `当前模式：${decisionBadge} · ${stageLabel} · ${trainingLoadLabel} · intake=${intakeStrategy} · 置信度 ${(confidence * 100).toFixed(0)}%`,
     note: evidence.length ? `证据：${evidence.join('；')}` : '当前记录数量不足时，以训练类型 + 最新体测做保守判断。',
   })
 
@@ -360,7 +374,7 @@ export function getDietPlan(latest, weekday, trainingLabel, history = []) {
   return {
     badge: decisionBadge,
     goal: '保肌肉 > 保代谢 > 温和减脂',
-    subtitle: `${focusText} · ${trendText} · 当前处于 ${stageLabel}，今天按 ${decisionBadge} 模式细化餐次，训练主题为 ${trainingLabel}。`,
+    subtitle: `${focusText} · ${trendText} · 当前处于 ${stageLabel}，负荷背景为 ${trainingLoadLabel}，今日 intake 策略为 ${intakeStrategy}，今天按 ${decisionBadge} 模式细化餐次，训练主题为 ${trainingLabel}。`,
     items,
     reminders: uniqueReminders,
     engine: rules.decision,
