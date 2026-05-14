@@ -158,3 +158,58 @@ test('exposes baseline band and training load semantics for phase 3A decisions',
   assert.equal(result.decision.stateStage, 'muscle_protection')
   assert.equal(result.decision.intakeStrategy, 'protect_recovery')
 })
+
+test('classifies above-band fat trend as tighten_intake on cardio days', () => {
+  const history = [
+    { date: '2026-05-20', weight: 69.4, bodyFat: 24.1, muscle: 50.4, water: 53.0, bmr: 1512, visceralFat: 11 },
+    { date: '2026-05-18', weight: 69.1, bodyFat: 23.6, muscle: 50.5, water: 53.2, bmr: 1514, visceralFat: 10 },
+    { date: '2026-05-15', weight: 68.9, bodyFat: 23.1, muscle: 50.6, water: 53.3, bmr: 1515, visceralFat: 10 },
+    { date: '2026-05-12', weight: 68.6, bodyFat: 22.8, muscle: 50.8, water: 53.4, bmr: 1517, visceralFat: 10 },
+    { date: '2026-05-08', weight: 68.3, bodyFat: 22.2, muscle: 50.9, water: 53.5, bmr: 1518, visceralFat: 10 },
+    { date: '2026-05-05', weight: 68.1, bodyFat: 21.9, muscle: 51.0, water: 53.6, bmr: 1519, visceralFat: 9 },
+    { date: '2026-05-02', weight: 67.9, bodyFat: 21.7, muscle: 51.1, water: 53.7, bmr: 1520, visceralFat: 9 },
+    { date: '2026-04-29', weight: 67.8, bodyFat: 21.6, muscle: 51.1, water: 53.8, bmr: 1521, visceralFat: 9 },
+  ]
+
+  const result = analyzeBodySignals(history[0], history, {
+    strengthDay: false,
+    cardioDay: true,
+    lowerBodyDay: false,
+    recoveryDay: false,
+  })
+
+  assert.equal(result.features.bodyFat.baselinePosition, 'above_band')
+  assert.equal(result.features.weight.baselinePosition, 'above_band')
+  assert.equal(result.decision.primaryMode, 'tighten_intake')
+  assert.equal(result.decision.stateStage, 'fat_gain_control')
+  assert.equal(result.decision.trainingLoad, 'cardio')
+  assert.equal(result.decision.intakeStrategy, 'trim_extras')
+})
+
+test('tightens intake when weight and fat both sit above baseline band even without sharp short-term spike', () => {
+  const history = [
+    { date: '2026-05-24', weight: 68.15, bodyFat: 21.1, muscle: 51.0, water: 53.9, bmr: 1520, visceralFat: 9 },
+    { date: '2026-05-21', weight: 68.05, bodyFat: 21.0, muscle: 51.0, water: 54.0, bmr: 1520, visceralFat: 9 },
+    { date: '2026-05-18', weight: 68.0, bodyFat: 20.9, muscle: 51.1, water: 54.1, bmr: 1521, visceralFat: 9 },
+    { date: '2026-05-15', weight: 67.95, bodyFat: 20.9, muscle: 51.1, water: 54.1, bmr: 1521, visceralFat: 9 },
+    { date: '2026-05-12', weight: 67.9, bodyFat: 20.9, muscle: 51.2, water: 54.2, bmr: 1522, visceralFat: 9 },
+    { date: '2026-05-09', weight: 67.9, bodyFat: 20.8, muscle: 51.2, water: 54.2, bmr: 1522, visceralFat: 9 },
+    { date: '2026-05-06', weight: 67.85, bodyFat: 20.8, muscle: 51.3, water: 54.3, bmr: 1523, visceralFat: 9 },
+    { date: '2026-05-03', weight: 67.85, bodyFat: 20.8, muscle: 51.3, water: 54.3, bmr: 1523, visceralFat: 9 },
+  ]
+
+  const result = analyzeBodySignals(history[0], history, {
+    strengthDay: false,
+    cardioDay: true,
+    lowerBodyDay: false,
+    recoveryDay: false,
+  })
+
+  assert.equal(result.features.bodyFat.baselinePosition, 'above_band')
+  assert.equal(result.features.weight.baselinePosition, 'above_band')
+  assert.equal(result.features.bodyFat.delta3 <= 0.4, true)
+  assert.equal(result.features.weight.delta3 <= 0.4, true)
+  assert.equal(result.decision.primaryMode, 'tighten_intake')
+  assert.equal(result.decision.stateStage, 'fat_gain_control')
+  assert.ok(result.signals.some(signal => signal.key === 'intake_tightening_needed'))
+})

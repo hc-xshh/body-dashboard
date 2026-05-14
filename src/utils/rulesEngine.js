@@ -478,14 +478,16 @@ export function analyzeBodySignals(latest, history = [], trainingContext = {}) {
   }
 
   const baselineDrivenTightening = (bodyFat.deviationFromBaseline28 ?? 0) > 1 && (weight.deviationFromBaseline28 ?? 0) > 0.6
-  if (((weight.delta3 ?? 0) > 0.4 && (bodyFat.delta3 ?? 0) > 0.4) || baselineDrivenTightening) {
+  const bandDrivenTightening = bodyFat.baselinePosition === 'above_band' && weight.baselinePosition === 'above_band'
+  if (((weight.delta3 ?? 0) > 0.4 && (bodyFat.delta3 ?? 0) > 0.4) || baselineDrivenTightening || bandDrivenTightening) {
     pushSignal(signals, 'intake_tightening_needed', {
       severity: 'high',
-      confidence: getConfidence('weight', weight.seriesLength, baselineDrivenTightening ? 3 : 2),
+      confidence: getConfidence('weight', weight.seriesLength, baselineDrivenTightening || bandDrivenTightening ? 3 : 2),
       evidence: dedupe([
         (weight.delta3 ?? 0) > 0.4 ? `最近几次体重累计 ${formatSigned(weight.delta3, 1, 'kg')}` : null,
         (bodyFat.delta3 ?? 0) > 0.4 ? `体脂同步累计 ${formatSigned(bodyFat.delta3, 1, '%')}` : null,
         baselineDrivenTightening ? `且体重/体脂都已高于个人基线` : null,
+        bandDrivenTightening ? `且体重/体脂都已站上个人波动带上沿` : null,
       ]),
     })
   }
