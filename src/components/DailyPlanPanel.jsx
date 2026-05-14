@@ -1,4 +1,4 @@
-export default function DailyPlanPanel({ title, subtitle, items = [], reminders = [], accent = 'accent', badge, compact = false }) {
+export default function DailyPlanPanel({ title, subtitle, items = [], reminders = [], accent = 'accent', badge, compact = false, contextChips = [] }) {
   const badgeStyles = {
     accent: 'bg-accent/15 text-accent border-accent/30',
     emerald: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
@@ -12,6 +12,19 @@ export default function DailyPlanPanel({ title, subtitle, items = [], reminders 
         <div>
           <h3 className="text-base font-semibold text-white">{title}</h3>
           {subtitle && <p className="mt-1 text-sm leading-relaxed text-slate-400">{subtitle}</p>}
+          {!!contextChips.length && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {contextChips.map(chip => (
+                <span
+                  key={`${title}-${chip.label}-${chip.value}`}
+                  className="inline-flex rounded-full border border-dark-600 bg-dark-900/70 px-2.5 py-1 text-xs text-slate-300"
+                >
+                  <span className="text-slate-500">{chip.label}：</span>
+                  <span className="ml-1 text-slate-200">{chip.value}</span>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
         {badge && (
           <span className={`inline-flex w-fit text-xs px-2.5 py-1 rounded-full border whitespace-nowrap ${badgeStyles[accent] ?? badgeStyles.accent}`}>

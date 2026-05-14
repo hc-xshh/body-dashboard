@@ -52,9 +52,9 @@ export function getScoreStatus(v) {
 }
 
 // 生成健康建议
-export function generateAdvice(latest, prev, history = []) {
+export function generateAdvice(latest, prev, history = [], currentWeekday = null) {
   const advice = []
-  const weekday = latest?.weekday ?? '周三'
+  const weekday = currentWeekday ?? latest?.weekday ?? '周三'
   const trainingContext = {
     strengthDay: ['周一', '周二', '周四', '周五'].includes(weekday),
     cardioDay: ['周三', '周六', '周日'].includes(weekday),

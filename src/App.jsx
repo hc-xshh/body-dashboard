@@ -10,18 +10,41 @@ import {
   getBodyFatStatus, getVisceralFatStatus, getWaterStatus,
   getBMRStatus, getBoneStatus, getScoreStatus
 } from './utils/healthAnalysis'
+import { analyzeBodySignals } from './utils/rulesEngine'
 import { getDietPlan, getSkincarePlan, getTodayLabel, getTrainingPlan, weeklyTrainingLabel } from './data/dailyPlans'
 
 const sorted = [...measurements].sort((a, b) => b.date.localeCompare(a.date))
 const latest = sorted[0]
 const prev = sorted[1] ?? null
 
-const advice = generateAdvice(latest, prev, sorted)
 const todayLabel = getTodayLabel()
 const todayTraining = weeklyTrainingLabel[todayLabel] ?? '按周计划执行'
+const advice = generateAdvice(latest, prev, sorted, todayLabel)
 const skincarePlan = getSkincarePlan(todayLabel)
 const trainingPlan = getTrainingPlan(todayLabel)
 const dietPlan = getDietPlan(latest, todayLabel, todayTraining, sorted)
+const todayTrainingContext = {
+  strengthDay: ['周一', '周二', '周四', '周五'].includes(todayLabel),
+  cardioDay: ['周三', '周六', '周日'].includes(todayLabel),
+  lowerBodyDay: todayLabel === '周二',
+  recoveryDay: ['周三', '周日'].includes(todayLabel),
+}
+const bodyEngine = analyzeBodySignals(latest, sorted, todayTrainingContext).decision
+const historyDecisionMap = new Map(
+  [...sorted]
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .map((record, index, asc) => {
+      const history = asc.slice(0, index + 1)
+      const trainingContext = {
+        strengthDay: ['周一', '周二', '周四', '周五'].includes(record.weekday),
+        cardioDay: ['周三', '周六', '周日'].includes(record.weekday),
+        lowerBodyDay: record.weekday === '周二',
+        recoveryDay: ['周三', '周日'].includes(record.weekday),
+      }
+      const decision = analyzeBodySignals(record, history, trainingContext).decision
+      return [record.date, decision]
+    }),
+)
 
 const todayDate = new Intl.DateTimeFormat('en-CA', {
   timeZone: 'Asia/Shanghai',
@@ -159,7 +182,7 @@ export default function App() {
           <div className="flex flex-col">
             <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">健康建议</h2>
             <div className="bg-dark-800 rounded-xl p-4 border border-dark-600 flex-1 min-h-[360px]">
-              <AdvicePanel advice={advice} />
+              <AdvicePanel advice={advice} engine={bodyEngine} />
             </div>
           </div>
         </section>
@@ -204,6 +227,12 @@ export default function App() {
               reminders={dietPlan.reminders}
               badge={dietPlan.badge}
               accent="emerald"
+              contextChips={[
+                { label: '阶段', value: dietPlan.engine?.stageLabel ?? bodyEngine.stageLabel },
+                { label: '负荷', value: dietPlan.engine?.trainingLoadLabel ?? bodyEngine.trainingLoadLabel },
+                { label: 'intake', value: dietPlan.engine?.intakeStrategy ?? bodyEngine.intakeStrategy },
+                { label: '置信度', value: `${(((dietPlan.engine?.confidence ?? bodyEngine.confidence) || 0) * 100).toFixed(0)}%` },
+              ]}
             />
           </div>
         </section>
@@ -211,6 +240,9 @@ export default function App() {
         <section id="story-trend" className="scroll-mt-24">
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">体重 & 体脂趋势</h2>
           <div className="bg-dark-800 rounded-xl p-4 border border-dark-600">
+            <p className="mb-4 text-sm leading-relaxed text-slate-400">
+              趋势区现在会同时显示规则引擎判断：上方卡片代表历史阶段/模式切换，图中的虚线代表策略切换点。这里展示的是每次体测当时对应的判断，不等同于今天的执行策略。
+            </p>
             <TrendChart data={measurements} metrics={trendMetrics1} />
           </div>
         </section>
@@ -228,25 +260,46 @@ export default function App() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-dark-600 text-slate-500 text-xs uppercase">
-                  {['日期','体重','体脂%','BMI','肌肉量','内脏脂肪','水分%','骨量','得分'].map(h => (
+                  {['日期','阶段 / 模式','体重','体脂%','BMI','肌肉量','内脏脂肪','水分%','骨量','得分'].map(h => (
                     <th key={h} className="px-4 py-3 text-left font-medium">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {sorted.map((d, i) => (
-                  <tr key={d.date} className={`border-b border-dark-700 hover:bg-dark-700/50 transition-colors ${i === 0 ? 'text-white' : 'text-slate-400'}`}>
-                    <td className="px-4 py-3 font-medium">{d.date}<span className="text-slate-600 text-xs ml-1">{d.weekday}</span></td>
-                    <td className="px-4 py-3">{d.weight ?? '—'}</td>
-                    <td className="px-4 py-3">{d.bodyFat ?? '—'}</td>
-                    <td className="px-4 py-3">{d.bmi ?? '—'}</td>
-                    <td className="px-4 py-3">{d.muscle ?? '—'}</td>
-                    <td className="px-4 py-3">{d.visceralFat ?? '—'}</td>
-                    <td className="px-4 py-3">{d.water ?? '—'}</td>
-                    <td className="px-4 py-3">{d.bone ?? '—'}</td>
-                    <td className="px-4 py-3">{d.score ?? '—'}</td>
-                  </tr>
-                ))}
+                {sorted.map((d, i) => {
+                  const decision = historyDecisionMap.get(d.date)
+
+                  return (
+                    <tr key={d.date} className={`border-b border-dark-700 hover:bg-dark-700/50 transition-colors ${i === 0 ? 'text-white' : 'text-slate-400'}`}>
+                      <td className="px-4 py-3 font-medium">{d.date}<span className="text-slate-600 text-xs ml-1">{d.weekday}</span></td>
+                      <td className="px-4 py-3 min-w-[220px]">
+                        {decision ? (
+                          <div className="flex flex-col gap-1">
+                            <div className="flex flex-wrap gap-1.5">
+                              <span className="inline-flex rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-[11px] text-accent-light">
+                                {decision.stageLabel}
+                              </span>
+                              <span className="inline-flex rounded-full border border-dark-600 bg-dark-900/70 px-2 py-0.5 text-[11px] text-slate-200">
+                                {decision.badge}
+                              </span>
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              {decision.trainingLoadLabel} · intake={decision.intakeStrategy}
+                            </div>
+                          </div>
+                        ) : '—'}
+                      </td>
+                      <td className="px-4 py-3">{d.weight ?? '—'}</td>
+                      <td className="px-4 py-3">{d.bodyFat ?? '—'}</td>
+                      <td className="px-4 py-3">{d.bmi ?? '—'}</td>
+                      <td className="px-4 py-3">{d.muscle ?? '—'}</td>
+                      <td className="px-4 py-3">{d.visceralFat ?? '—'}</td>
+                      <td className="px-4 py-3">{d.water ?? '—'}</td>
+                      <td className="px-4 py-3">{d.bone ?? '—'}</td>
+                      <td className="px-4 py-3">{d.score ?? '—'}</td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
