@@ -63,7 +63,7 @@ export function generateAdvice(latest, prev, history = []) {
   }
   const seriesHistory = history.length ? history : [latest, prev].filter(Boolean)
   const analysis = analyzeBodySignals(latest, seriesHistory, trainingContext)
-  const { primaryMode, badge, confidence, evidence } = analysis.decision
+  const { primaryMode, badge, confidence, evidence, evidenceGroups, stageLabel } = analysis.decision
 
   const modeAdvice = {
     protect_metabolism: { level: 'warn', icon: '🛡️', text: '当前优先保护代谢与瘦体重：先稳住午餐、训练前补给和训练后蛋白，不因为短期波动继续激进减餐。' },
@@ -77,8 +77,19 @@ export function generateAdvice(latest, prev, history = []) {
   advice.push({
     level: confidence >= 0.7 ? 'good' : confidence >= 0.55 ? 'warn' : 'bad',
     icon: '🧭',
-    text: `主策略模式：${badge}（置信度 ${(confidence * 100).toFixed(0)}%）。${evidence.length ? `依据：${evidence.join('；')}` : '当前历史记录较少，按保守策略输出。'}`,
+    text: `主策略模式：${badge} · ${stageLabel}（置信度 ${(confidence * 100).toFixed(0)}%）。${evidence.length ? `依据：${evidence.join('；')}` : '当前历史记录较少，按保守策略输出。'}`,
   })
+
+  if (evidenceGroups?.baseline?.length || evidenceGroups?.trend?.length) {
+    advice.push({
+      level: 'good',
+      icon: '🪜',
+      text: `长窗口判断：${[
+        evidenceGroups?.baseline?.[0],
+        evidenceGroups?.trend?.[0],
+      ].filter(Boolean).join('；')}。`,
+    })
+  }
 
   if (latest.bodyFat != null) {
     if (latest.bodyFat > 22) {

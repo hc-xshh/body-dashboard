@@ -75,3 +75,58 @@ test('selects recovery_first on recovery day when weight rebounds but fat falls'
 
   assert.equal(result.decision.primaryMode, 'recovery_first')
 })
+
+test('builds a longer-window baseline model and exposes structured evidence groups', () => {
+  const history = [
+    { date: '2026-05-13', weight: 68.7, bodyFat: 22.4, muscle: 50.6, water: 53.2, bmr: 1515, visceralFat: 10 },
+    { date: '2026-05-12', weight: 68.6, bodyFat: 22.2, muscle: 50.7, water: 53.4, bmr: 1516, visceralFat: 10 },
+    { date: '2026-05-10', weight: 68.4, bodyFat: 21.9, muscle: 50.8, water: 53.6, bmr: 1517, visceralFat: 10 },
+    { date: '2026-05-08', weight: 68.2, bodyFat: 21.5, muscle: 50.9, water: 53.7, bmr: 1518, visceralFat: 10 },
+    { date: '2026-05-05', weight: 67.9, bodyFat: 21.1, muscle: 51.0, water: 53.9, bmr: 1520, visceralFat: 9 },
+    { date: '2026-05-01', weight: 67.7, bodyFat: 20.8, muscle: 51.1, water: 54.1, bmr: 1522, visceralFat: 9 },
+    { date: '2026-04-28', weight: 67.6, bodyFat: 20.6, muscle: 51.2, water: 54.2, bmr: 1523, visceralFat: 9 },
+    { date: '2026-04-24', weight: 67.5, bodyFat: 20.5, muscle: 51.2, water: 54.2, bmr: 1524, visceralFat: 9 },
+    { date: '2026-04-20', weight: 67.4, bodyFat: 20.4, muscle: 51.3, water: 54.3, bmr: 1525, visceralFat: 9 },
+  ]
+
+  const result = analyzeBodySignals(history[0], history, {
+    strengthDay: false,
+    cardioDay: true,
+    lowerBodyDay: false,
+    recoveryDay: false,
+  })
+
+  assert.ok(result.features.bodyFat.window28)
+  assert.equal(result.features.bodyFat.window28.count, 9)
+  assert.ok(result.features.bodyFat.baseline28 != null)
+  assert.ok(result.features.bodyFat.deviationFromBaseline28 > 1)
+  assert.equal(result.decision.stateStage, 'fat_gain_control')
+  assert.ok(Array.isArray(result.decision.evidenceGroups.baseline))
+  assert.ok(result.decision.evidenceGroups.baseline.length > 0)
+  assert.ok(Array.isArray(result.decision.evidenceGroups.trend))
+  assert.ok(result.decision.evidenceGroups.trend.length > 0)
+})
+
+test('uses baseline context to classify recovery rebound instead of over-tightening', () => {
+  const history = [
+    { date: '2026-05-13', weight: 68.9, bodyFat: 20.7, muscle: 51.0, water: 53.7, bmr: 1521, visceralFat: 9 },
+    { date: '2026-05-12', weight: 68.6, bodyFat: 20.8, muscle: 50.9, water: 53.6, bmr: 1519, visceralFat: 9 },
+    { date: '2026-05-11', weight: 68.3, bodyFat: 21.0, muscle: 50.8, water: 53.5, bmr: 1518, visceralFat: 9 },
+    { date: '2026-05-10', weight: 68.1, bodyFat: 21.1, muscle: 50.8, water: 53.4, bmr: 1517, visceralFat: 9 },
+    { date: '2026-05-07', weight: 68.0, bodyFat: 21.0, muscle: 50.9, water: 53.5, bmr: 1518, visceralFat: 9 },
+    { date: '2026-05-03', weight: 68.1, bodyFat: 20.9, muscle: 50.9, water: 53.6, bmr: 1519, visceralFat: 9 },
+    { date: '2026-04-28', weight: 68.0, bodyFat: 20.8, muscle: 51.0, water: 53.6, bmr: 1519, visceralFat: 9 },
+    { date: '2026-04-22', weight: 68.1, bodyFat: 20.8, muscle: 51.0, water: 53.7, bmr: 1520, visceralFat: 9 },
+  ]
+
+  const result = analyzeBodySignals(history[0], history, {
+    strengthDay: false,
+    cardioDay: true,
+    lowerBodyDay: false,
+    recoveryDay: true,
+  })
+
+  assert.equal(result.decision.primaryMode, 'recovery_first')
+  assert.equal(result.decision.stateStage, 'rebound_recovery')
+  assert.ok(result.decision.evidenceGroups.baseline.some(item => item.includes('个人基线')))
+})

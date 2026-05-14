@@ -227,7 +227,7 @@ export function getDietPlan(latest, weekday, trainingLabel, history = []) {
   const trainingContext = { strengthDay, cardioDay, lowerBodyDay, recoveryDay }
 
   const rules = analyzeBodySignals(latest, history, trainingContext)
-  const { primaryMode, evidence, confidence, badge: decisionBadge, summary } = rules.decision
+  const { primaryMode, evidence, confidence, badge: decisionBadge, summary, stageLabel, evidenceGroups } = rules.decision
   const strategySignals = []
   const trendSignals = []
   const bodyFocus = []
@@ -331,11 +331,25 @@ export function getDietPlan(latest, weekday, trainingLabel, history = []) {
     })
   }
 
+  const longWindowSummary = [
+    evidenceGroups?.baseline?.[0],
+    evidenceGroups?.trend?.[0],
+  ].filter(Boolean).join('；')
+
+  if (longWindowSummary) {
+    items.unshift({
+      time: '长窗口',
+      title: '个人基线判断',
+      detail: `${longWindowSummary}。`,
+      note: '阶段二开始把最近记录放回个人基线里判断，减少“只看昨天 vs 今天”的误判。',
+    })
+  }
+
   items.unshift({
     time: '今日策略',
     title: '主策略模式',
     detail: summary,
-    emphasis: `当前模式：${decisionBadge} · 置信度 ${(confidence * 100).toFixed(0)}%`,
+    emphasis: `当前模式：${decisionBadge} · ${stageLabel} · 置信度 ${(confidence * 100).toFixed(0)}%`,
     note: evidence.length ? `证据：${evidence.join('；')}` : '当前记录数量不足时，以训练类型 + 最新体测做保守判断。',
   })
 
@@ -346,7 +360,7 @@ export function getDietPlan(latest, weekday, trainingLabel, history = []) {
   return {
     badge: decisionBadge,
     goal: '保肌肉 > 保代谢 > 温和减脂',
-    subtitle: `${focusText} · ${trendText} · 今天按 ${decisionBadge} 模式细化餐次，训练主题为 ${trainingLabel}。`,
+    subtitle: `${focusText} · ${trendText} · 当前处于 ${stageLabel}，今天按 ${decisionBadge} 模式细化餐次，训练主题为 ${trainingLabel}。`,
     items,
     reminders: uniqueReminders,
     engine: rules.decision,
