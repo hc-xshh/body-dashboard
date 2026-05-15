@@ -4,17 +4,56 @@ export default function AdvicePanel({ advice, engine = null }) {
   const bg = { good: 'bg-green-900/20 border-green-700/40', warn: 'bg-amber-900/20 border-amber-700/40', bad: 'bg-red-900/20 border-red-700/40' }
   const text = { good: 'text-green-400', warn: 'text-amber-400', bad: 'text-red-400' }
 
-  const evidenceSections = engine
-    ? [
-        { label: '基线', value: engine.evidenceGroups?.baseline?.slice(0, 2).join('；') },
-        { label: '趋势', value: engine.evidenceGroups?.trend?.slice(0, 2).join('；') },
-        { label: '风险', value: engine.evidenceGroups?.risk?.slice(0, 2).join('；') },
-        { label: '补水', value: engine.evidenceGroups?.hydration?.slice(0, 1).join('；') },
-      ].filter(section => section.value)
-    : []
+  // ── evidenceGroups → structured card definitions ──
+  const evidenceCards = []
+  if (engine?.evidenceGroups) {
+    const { baseline, trend, risk, hydration } = engine.evidenceGroups
+
+    if (baseline?.length) {
+      evidenceCards.push({
+        label: '基线',
+        icon: '📏',
+        color: 'border-indigo-500/25',
+        bg: 'bg-indigo-500/5',
+        items: baseline,
+        hint: '相对个人28天中位数与波动带的偏离判断',
+      })
+    }
+    if (trend?.length) {
+      evidenceCards.push({
+        label: '趋势',
+        icon: '📊',
+        color: 'border-emerald-500/25',
+        bg: 'bg-emerald-500/5',
+        items: trend,
+        hint: '最近几次连续变化的幅度与方向',
+      })
+    }
+    if (risk?.length) {
+      evidenceCards.push({
+        label: '风险',
+        icon: '⚡',
+        color: 'border-red-500/20',
+        bg: 'bg-red-500/5',
+        items: risk,
+        hint: '当前需要优先关注的健康风险',
+      })
+    }
+    if (hydration?.length) {
+      evidenceCards.push({
+        label: '补水',
+        icon: '💧',
+        color: 'border-sky-500/25',
+        bg: 'bg-sky-500/5',
+        items: hydration,
+        hint: '水分相关的连续表现与提醒',
+      })
+    }
+  }
 
   return (
     <div className="flex h-full flex-col gap-3">
+      {/* ── Engine summary card ── */}
       {engine && (
         <div className="rounded-xl border border-accent/20 bg-accent/10 p-3.5 sm:p-4">
           <div className="flex flex-wrap items-center gap-2">
@@ -37,12 +76,23 @@ export default function AdvicePanel({ advice, engine = null }) {
 
           <p className="mt-3 text-sm leading-relaxed text-slate-200">{engine.summary}</p>
 
-          {!!evidenceSections.length && (
-            <div className="mt-3 grid gap-2 sm:grid-cols-2">
-              {evidenceSections.map(section => (
-                <div key={section.label} className="rounded-lg border border-dark-700 bg-dark-900/60 px-3 py-2.5">
-                  <div className="text-[11px] uppercase tracking-widest text-slate-500">{section.label}</div>
-                  <p className="mt-1 text-xs leading-relaxed text-slate-300">{section.value}</p>
+          {/* ── Structured evidence cards ── */}
+          {!!evidenceCards.length && (
+            <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+              {evidenceCards.map(card => (
+                <div key={card.label} className={`rounded-lg border ${card.color} ${card.bg} px-3 py-3`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-sm">{card.icon}</span>
+                    <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">{card.label}</span>
+                    <span className="text-[10px] text-slate-600 ml-auto">{card.hint}</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    {card.items.map((item, idx) => (
+                      <p key={idx} className="text-xs leading-relaxed text-slate-300 pl-5 border-l-2 border-dark-600/50">
+                        {item}
+                      </p>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
@@ -50,6 +100,7 @@ export default function AdvicePanel({ advice, engine = null }) {
         </div>
       )}
 
+      {/* ── Advice cards ── */}
       {advice.map((a, i) => (
         <div key={i} className={`rounded-xl border p-3.5 sm:p-4 ${bg[a.level] ?? 'bg-dark-800 border-dark-600'} flex gap-3 items-start`}>
           <span className="text-lg flex-shrink-0 sm:text-xl">{a.icon}</span>

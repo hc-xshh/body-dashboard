@@ -9,21 +9,42 @@ function buildDecisionTimeline(data = []) {
 
   return asc.map((record, index) => {
     const history = asc.slice(0, index + 1)
-    const decision = analyzeBodySignals(record, history, getTrainingContext(record.weekday)).decision
+    const analysis = analyzeBodySignals(record, history, getTrainingContext(record.weekday))
 
     return {
       date: record.date,
       weekday: record.weekday,
-      badge: decision.badge,
-      stageLabel: decision.stageLabel,
-      primaryMode: decision.primaryMode,
-      trainingLoadLabel: decision.trainingLoadLabel,
-      intakeStrategy: decision.intakeStrategy,
-      confidence: Math.round((decision.confidence ?? 0) * 100),
-      riskText: decision.evidenceGroups?.risk?.[0] ?? null,
-      trendText: decision.evidenceGroups?.trend?.[0] ?? null,
+      badge: analysis.decision.badge,
+      stageLabel: analysis.decision.stageLabel,
+      primaryMode: analysis.decision.primaryMode,
+      trainingLoadLabel: analysis.decision.trainingLoadLabel,
+      intakeStrategy: analysis.decision.intakeStrategy,
+      confidence: Math.round((analysis.decision.confidence ?? 0) * 100),
+      riskText: analysis.decision.evidenceGroups?.risk?.[0] ?? null,
+      trendText: analysis.decision.evidenceGroups?.trend?.[0] ?? null,
     }
   })
+}
+
+/**
+ * Compute the personal baseline band (P25–P75) for a metric from the full
+ * dataset, so the trend chart can render it as a static "normal range" zone.
+ * Returns { low, high } or null if there aren't enough records.
+ */
+function computeBaselineBand(data, metricKey, minSamples = 4) {
+  const values = data
+    .filter(d => d[metricKey] != null)
+    .map(d => d[metricKey])
+  if (values.length < minSamples) return null
+
+  // Use the most recent 10 values to keep the band responsive to shifts
+  const window = values.slice(0, 10)
+  const sorted = [...window].sort((a, b) => a - b)
+  const n = sorted.length
+  return {
+    low: sorted[Math.floor(n * 0.25)],
+    high: sorted[Math.ceil(n * 0.75) - 1],
+  }
 }
 
 export default function TrendChart({ data, metrics }) {
@@ -38,6 +59,11 @@ export default function TrendChart({ data, metrics }) {
   })
   const recentChangeEvents = changeEvents.slice(-4).reverse()
 
+  // Earliest/latest date range for band overlay
+  const dates = data.filter(d => d.date).map(d => d.date).sort()
+  const bandStart = dates[0] ?? null
+  const bandEnd = dates[dates.length - 1] ?? null
+
   const series = metrics.map((m, i) => {
     const trend = getTrendData(data, m.key)
     const baseSeries = {
@@ -51,6 +77,28 @@ export default function TrendChart({ data, metrics }) {
       itemStyle: { color: colors[i % colors.length] },
     }
 
+    // --- Baseline band overlay (on first metric only) ---
+    if (i === 0 && bandStart && bandEnd) {
+      const band = computeBaselineBand(data, m.key)
+      if (band && band.high > band.low) {
+        baseSeries.markArea = {
+          silent: true,
+          label: { show: false },
+          itemStyle: {
+            color: 'rgba(148, 163, 184, 0.08)',
+            borderColor: 'rgba(148, 163, 184, 0.15)',
+            borderWidth: 1,
+            borderType: 'dashed',
+          },
+          data: [[
+            { xAxis: bandStart, yAxis: band.low },
+            { xAxis: bandEnd, yAxis: band.high },
+          ]],
+        }
+      }
+    }
+
+    // --- Strategy change markers (on first metric only) ---
     if (i === 0 && changeEvents.length > 1) {
       baseSeries.markLine = {
         symbol: ['none', 'none'],
