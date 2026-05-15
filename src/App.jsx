@@ -11,6 +11,7 @@ import {
   getBMRStatus, getBoneStatus, getScoreStatus
 } from './utils/healthAnalysis'
 import { analyzeBodySignals } from './utils/rulesEngine'
+import { getTrainingContext } from './utils/trainingContext'
 import { getDietPlan, getSkincarePlan, getTodayLabel, getTrainingPlan, weeklyTrainingLabel } from './data/dailyPlans'
 
 const sorted = [...measurements].sort((a, b) => b.date.localeCompare(a.date))
@@ -23,24 +24,14 @@ const advice = generateAdvice(latest, prev, sorted, todayLabel)
 const skincarePlan = getSkincarePlan(todayLabel)
 const trainingPlan = getTrainingPlan(todayLabel)
 const dietPlan = getDietPlan(latest, todayLabel, todayTraining, sorted)
-const todayTrainingContext = {
-  strengthDay: ['周一', '周二', '周四', '周五'].includes(todayLabel),
-  cardioDay: ['周三', '周六', '周日'].includes(todayLabel),
-  lowerBodyDay: todayLabel === '周二',
-  recoveryDay: ['周三', '周日'].includes(todayLabel),
-}
+const todayTrainingContext = getTrainingContext(todayLabel)
 const bodyEngine = analyzeBodySignals(latest, sorted, todayTrainingContext).decision
 const historyDecisionMap = new Map(
   [...sorted]
     .sort((a, b) => a.date.localeCompare(b.date))
     .map((record, index, asc) => {
       const history = asc.slice(0, index + 1)
-      const trainingContext = {
-        strengthDay: ['周一', '周二', '周四', '周五'].includes(record.weekday),
-        cardioDay: ['周三', '周六', '周日'].includes(record.weekday),
-        lowerBodyDay: record.weekday === '周二',
-        recoveryDay: ['周三', '周日'].includes(record.weekday),
-      }
+      const trainingContext = getTrainingContext(record.weekday)
       const decision = analyzeBodySignals(record, history, trainingContext).decision
       return [record.date, decision]
     }),

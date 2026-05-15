@@ -240,3 +240,38 @@ test('does not default to recovery_first on recovery day when body fat sits abov
   assert.equal(result.decision.stateStage, 'fat_gain_control')
   assert.ok(result.signals.some(signal => signal.key === 'intake_tightening_needed'))
 })
+
+
+test('accepts config overrides for body fat thresholds without breaking decision shape', () => {
+  const history = [
+    { date: '2026-05-13', weight: 68.3, bodyFat: 20.4, muscle: 50.4, water: 53.2, bmr: 1514, visceralFat: 9 },
+    { date: '2026-05-12', weight: 68.2, bodyFat: 20.3, muscle: 50.5, water: 53.3, bmr: 1515, visceralFat: 9 },
+    { date: '2026-05-11', weight: 68.1, bodyFat: 20.2, muscle: 50.6, water: 53.4, bmr: 1516, visceralFat: 9 },
+    { date: '2026-05-10', weight: 68.0, bodyFat: 20.1, muscle: 50.7, water: 53.5, bmr: 1517, visceralFat: 9 },
+  ]
+
+  const baseline = analyzeBodySignals(history[0], history, {
+    strengthDay: false,
+    cardioDay: false,
+    lowerBodyDay: false,
+    recoveryDay: false,
+  })
+
+  const overridden = analyzeBodySignals(history[0], history, {
+    strengthDay: false,
+    cardioDay: false,
+    lowerBodyDay: false,
+    recoveryDay: false,
+  }, {
+    thresholds: {
+      fatMildHigh: 20.5,
+    },
+  })
+
+  // Default threshold (20): bodyFat 20.4 > 20 → signal fires
+  assert.equal(Boolean(baseline.signals.some(signal => signal.key === 'fat_mild_high')), true)
+  // Override threshold (20.5): bodyFat 20.4 < 20.5 → signal suppressed
+  assert.equal(Boolean(overridden.signals.some(signal => signal.key === 'fat_mild_high')), false)
+  assert.ok(overridden.decision)
+  assert.ok(typeof overridden.decision.primaryMode === 'string')
+})

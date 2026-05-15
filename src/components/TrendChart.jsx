@@ -1,15 +1,8 @@
 import ReactECharts from 'echarts-for-react'
 import { getTrendData } from '../utils/healthAnalysis'
 import { analyzeBodySignals } from '../utils/rulesEngine'
+import { getTrainingContext } from '../utils/trainingContext'
 
-function getTrainingContext(weekday) {
-  return {
-    strengthDay: ['周一', '周二', '周四', '周五'].includes(weekday),
-    cardioDay: ['周三', '周六', '周日'].includes(weekday),
-    lowerBodyDay: weekday === '周二',
-    recoveryDay: ['周三', '周日'].includes(weekday),
-  }
-}
 
 function buildDecisionTimeline(data = []) {
   const asc = [...data].sort((a, b) => a.date.localeCompare(b.date))

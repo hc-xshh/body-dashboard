@@ -1,3 +1,5 @@
+import { defaultRulesEngineConfig, mergeRulesEngineConfig } from '../config/rulesEngineConfig.js'
+
 const HIGH_CONFIDENCE_KEYS = new Set(['weight', 'bodyFat', 'visceralFat'])
 const LOW_CONFIDENCE_KEYS = new Set(['water', 'muscle', 'bone', 'bmr'])
 
@@ -10,7 +12,7 @@ function round(value, digits = 2) {
   return Number(value.toFixed(digits))
 }
 
-function getSeries(history, key, limit = 10) {
+function getSeries(history, key, limit = defaultRulesEngineConfig.windows.seriesLimit) {
   return history
     .filter(item => item?.[key] != null)
     .slice(0, limit)
@@ -102,9 +104,9 @@ function getBaseline(series, size = 10) {
   return getMedian(series.slice(1), size)
 }
 
-function getBaselineBand(series, size = 10) {
+function getBaselineBand(series, size = 10, minSamples = defaultRulesEngineConfig.windows.minBaselineBandSamples) {
   const values = series.slice(1, size + 1)
-  if (values.length < 4) return null
+  if (values.length < minSamples) return null
 
   const low = getPercentile(values, 0.25)
   const mid = getMedian(values)
@@ -192,9 +194,9 @@ function getModeMeta(primaryMode, stateStage) {
   }
 }
 
-function buildMetricFeatures(latestValue, series, { shortWindow = 4, mediumWindow = 8, longWindow = 10 } = {}) {
+function buildMetricFeatures(latestValue, series, { shortWindow = defaultRulesEngineConfig.windows.shortWindow, mediumWindow = defaultRulesEngineConfig.windows.mediumWindow, longWindow = defaultRulesEngineConfig.windows.longWindow, minBaselineBandSamples = defaultRulesEngineConfig.windows.minBaselineBandSamples } = {}) {
   const baseline28 = getBaseline(series, longWindow)
-  const baselineBand28 = getBaselineBand(series, longWindow)
+  const baselineBand28 = getBaselineBand(series, longWindow, minBaselineBandSamples)
   const short = getWindowSnapshot(series, shortWindow)
   const medium = getWindowSnapshot(series, mediumWindow)
   const long = getWindowSnapshot(series, longWindow)
@@ -222,7 +224,7 @@ function buildMetricFeatures(latestValue, series, { shortWindow = 4, mediumWindo
   }
 }
 
-function collectEvidenceGroups(features, signals, stateStage) {
+function collectEvidenceGroups(features, signals, stateStage, thresholds) {
   const baseline = []
   const trend = []
   const risk = []
@@ -242,7 +244,7 @@ function collectEvidenceGroups(features, signals, stateStage) {
     const { low, high } = features.weight.baselineBand28
     baseline.push(`体重个人波动带 ${low.toFixed(1)} - ${high.toFixed(1)}kg，当前处于${features.weight.baselinePosition === 'above_band' ? '带外偏高' : features.weight.baselinePosition === 'below_band' ? '带外偏低' : '带内'}`)
   }
-  if (features.bodyFat.window28.count >= 6) {
+  if (features.bodyFat.window28.count >= thresholds.minLongWindowCount) {
     baseline.push(`长窗口已覆盖 ${features.bodyFat.window28.count} 次记录，判断不只看最近 1-2 次波动`)
   }
 
@@ -277,7 +279,7 @@ function collectEvidenceGroups(features, signals, stateStage) {
   }
 }
 
-function getStateStage(signals, trainingContext, features) {
+function getStateStage(signals, trainingContext, features, thresholds) {
   const keys = new Set(signals.map(signal => signal.key))
 
   if (keys.has('metabolism_protection_needed') || keys.has('false_cut_risk') || keys.has('muscle_drop_confirmed')) {
@@ -290,9 +292,9 @@ function getStateStage(signals, trainingContext, features) {
     return 'rebound_recovery'
   }
 
-  const weightNearBaseline = Math.abs(features.weight.deviationFromBaseline28 ?? 0) <= 1.2
-  const fatNearBaseline = Math.abs(features.bodyFat.deviationFromBaseline28 ?? 0) <= 0.8
-  const recoveryLikeDirection = (features.weight.delta3 ?? 0) > 0.3 && (features.bodyFat.delta3 ?? 0) <= 0
+  const weightNearBaseline = Math.abs(features.weight.deviationFromBaseline28 ?? 0) <= thresholds.reboundWeightNearBaseline
+  const fatNearBaseline = Math.abs(features.bodyFat.deviationFromBaseline28 ?? 0) <= thresholds.reboundFatNearBaseline
+  const recoveryLikeDirection = (features.weight.delta3 ?? 0) > thresholds.reboundWeightRiseDelta3 && (features.bodyFat.delta3 ?? 0) <= thresholds.reboundFatNonIncreaseDelta3
   if (trainingContext.recoveryDay && recoveryLikeDirection && weightNearBaseline && fatNearBaseline) {
     return 'rebound_recovery'
   }
@@ -339,29 +341,38 @@ function getIntakeStrategy(primaryMode, trainingContext) {
   return 'hold_steady'
 }
 
-export function analyzeBodySignals(latest, history = [], trainingContext = {}) {
-  const weightSeries = getSeries(history, 'weight')
-  const fatSeries = getSeries(history, 'bodyFat')
-  const muscleSeries = getSeries(history, 'muscle')
-  const waterSeries = getSeries(history, 'water')
-  const bmrSeries = getSeries(history, 'bmr')
-  const visceralSeries = getSeries(history, 'visceralFat')
+export function analyzeBodySignals(latest, history = [], trainingContext = {}, configOverrides = {}) {
+  const config = mergeRulesEngineConfig(configOverrides)
+  const { thresholds, windows } = config
+  const weightSeries = getSeries(history, 'weight', windows.seriesLimit)
+  const fatSeries = getSeries(history, 'bodyFat', windows.seriesLimit)
+  const muscleSeries = getSeries(history, 'muscle', windows.seriesLimit)
+  const waterSeries = getSeries(history, 'water', windows.seriesLimit)
+  const bmrSeries = getSeries(history, 'bmr', windows.seriesLimit)
+  const visceralSeries = getSeries(history, 'visceralFat', windows.seriesLimit)
 
-  const weight = buildMetricFeatures(latest?.weight, weightSeries)
-  const bodyFat = buildMetricFeatures(latest?.bodyFat, fatSeries)
-  const muscle = buildMetricFeatures(latest?.muscle, muscleSeries)
-  const water = buildMetricFeatures(latest?.water, waterSeries)
-  const bmr = buildMetricFeatures(latest?.bmr, bmrSeries)
+  const metricWindowConfig = {
+    shortWindow: windows.shortWindow,
+    mediumWindow: windows.mediumWindow,
+    longWindow: windows.longWindow,
+    minBaselineBandSamples: windows.minBaselineBandSamples,
+  }
+
+  const weight = buildMetricFeatures(latest?.weight, weightSeries, metricWindowConfig)
+  const bodyFat = buildMetricFeatures(latest?.bodyFat, fatSeries, metricWindowConfig)
+  const muscle = buildMetricFeatures(latest?.muscle, muscleSeries, metricWindowConfig)
+  const water = buildMetricFeatures(latest?.water, waterSeries, metricWindowConfig)
+  const bmr = buildMetricFeatures(latest?.bmr, bmrSeries, metricWindowConfig)
   const visceralFat = {
     latest: latest?.visceralFat ?? null,
-    avg4: getWindowAverage(visceralSeries, 4),
+    avg4: getWindowAverage(visceralSeries, windows.shortWindow),
     seriesLength: visceralSeries.length,
-    window14: getWindowSnapshot(visceralSeries, 8),
-    window28: getWindowSnapshot(visceralSeries, 10),
-    baseline28: getBaseline(visceralSeries, 10),
-    deviationFromBaseline28: getBaseline(visceralSeries, 10) == null || latest?.visceralFat == null
+    window14: getWindowSnapshot(visceralSeries, windows.mediumWindow),
+    window28: getWindowSnapshot(visceralSeries, windows.longWindow),
+    baseline28: getBaseline(visceralSeries, windows.longWindow),
+    deviationFromBaseline28: getBaseline(visceralSeries, windows.longWindow) == null || latest?.visceralFat == null
       ? null
-      : round(latest.visceralFat - getBaseline(visceralSeries, 10)),
+      : round(latest.visceralFat - getBaseline(visceralSeries, windows.longWindow)),
   }
 
   const features = {
@@ -376,13 +387,13 @@ export function analyzeBodySignals(latest, history = [], trainingContext = {}) {
 
   const signals = []
 
-  if ((latest?.bodyFat ?? 0) > 22) {
+  if ((latest?.bodyFat ?? 0) > thresholds.fatHigh) {
     pushSignal(signals, 'fat_high', {
       severity: 'high',
       confidence: getConfidence('bodyFat', bodyFat.seriesLength, 1),
       evidence: [`当前体脂率 ${latest.bodyFat}% 偏高`],
     })
-  } else if ((latest?.bodyFat ?? 0) > 20) {
+  } else if ((latest?.bodyFat ?? 0) > thresholds.fatMildHigh) {
     pushSignal(signals, 'fat_mild_high', {
       severity: 'medium',
       confidence: getConfidence('bodyFat', bodyFat.seriesLength, 1),
@@ -390,7 +401,7 @@ export function analyzeBodySignals(latest, history = [], trainingContext = {}) {
     })
   }
 
-  if (bodyFat.upMoves >= 2 && (bodyFat.delta3 ?? 0) > 0.6) {
+  if (bodyFat.upMoves >= 2 && (bodyFat.delta3 ?? 0) > thresholds.fatRisingPersistentDelta3) {
     pushSignal(signals, 'fat_rising_persistent', {
       severity: 'high',
       confidence: getConfidence('bodyFat', bodyFat.seriesLength, 2),
@@ -398,7 +409,7 @@ export function analyzeBodySignals(latest, history = [], trainingContext = {}) {
     })
   }
 
-  if (bodyFat.downMoves >= 2 && (bodyFat.delta3 ?? 0) < -0.6) {
+  if (bodyFat.downMoves >= 2 && (bodyFat.delta3 ?? 0) < thresholds.fatFallingPersistentDelta3) {
     pushSignal(signals, 'fat_falling_persistent', {
       severity: 'medium',
       confidence: getConfidence('bodyFat', bodyFat.seriesLength, 2),
@@ -406,7 +417,7 @@ export function analyzeBodySignals(latest, history = [], trainingContext = {}) {
     })
   }
 
-  if ((bodyFat.deviationFromBaseline28 ?? 0) > 1 && bodyFat.window28.count >= 6) {
+  if ((bodyFat.deviationFromBaseline28 ?? 0) > thresholds.fatAboveBaselineDeviation && bodyFat.window28.count >= thresholds.minLongWindowCount) {
     pushSignal(signals, 'fat_above_personal_baseline', {
       severity: 'medium',
       confidence: getConfidence('bodyFat', bodyFat.seriesLength, 2),
@@ -414,7 +425,7 @@ export function analyzeBodySignals(latest, history = [], trainingContext = {}) {
     })
   }
 
-  if ((latest?.visceralFat ?? 0) >= 10) {
+  if ((latest?.visceralFat ?? 0) >= thresholds.visceralFatHigh) {
     pushSignal(signals, 'visceral_fat_high', {
       severity: 'medium',
       confidence: getConfidence('visceralFat', visceralFat.seriesLength, 1),
@@ -422,9 +433,9 @@ export function analyzeBodySignals(latest, history = [], trainingContext = {}) {
     })
   }
 
-  if ((latest?.water ?? 100) < 55) {
+  if ((latest?.water ?? 100) < thresholds.waterLow) {
     const evidence = [`当前水分 ${latest.water}% 偏低`]
-    if (water.downMoves >= 2 && (water.delta3 ?? 0) < -0.4) {
+    if (water.downMoves >= 2 && (water.delta3 ?? 0) < thresholds.hydrationDecliningDelta3) {
       evidence.push(`最近几次水分持续走低，累计 ${formatSigned(water.delta3, 1, '%')}`)
       pushSignal(signals, 'hydration_declining', {
         severity: 'medium',
@@ -440,7 +451,7 @@ export function analyzeBodySignals(latest, history = [], trainingContext = {}) {
     }
   }
 
-  if ((latest?.bmr ?? 9999) < 1550) {
+  if ((latest?.bmr ?? 9999) < thresholds.bmrLow) {
     pushSignal(signals, 'bmr_low', {
       severity: 'medium',
       confidence: getConfidence('bmr', bmr.seriesLength, 1),
@@ -449,10 +460,10 @@ export function analyzeBodySignals(latest, history = [], trainingContext = {}) {
   }
 
   const muscleDropEvidence = []
-  if ((muscle.delta3 ?? 0) < -0.8) muscleDropEvidence.push(`最近几次肌肉量累计 ${formatSigned(muscle.delta3, 1, 'kg')}`)
+  if ((muscle.delta3 ?? 0) < thresholds.muscleDropDelta3) muscleDropEvidence.push(`最近几次肌肉量累计 ${formatSigned(muscle.delta3, 1, 'kg')}`)
   if (muscle.downMoves >= 2) muscleDropEvidence.push('最近几次肌肉量方向连续走弱')
 
-  if (muscleDropEvidence.length >= 2 && ((bodyFat.delta3 ?? 0) > 0.4 || (bmr.delta3 ?? 0) < -20)) {
+  if (muscleDropEvidence.length >= 2 && ((bodyFat.delta3 ?? 0) > thresholds.falseCutFatRiseDelta3 || (bmr.delta3 ?? 0) < thresholds.muscleDropBmrDelta3)) {
     pushSignal(signals, 'muscle_drop_confirmed', {
       severity: 'high',
       confidence: getConfidence('muscle', muscle.seriesLength, muscleDropEvidence.length + 1),
@@ -466,7 +477,7 @@ export function analyzeBodySignals(latest, history = [], trainingContext = {}) {
     })
   }
 
-  if ((weight.delta3 ?? 0) < -0.4 && (bodyFat.delta3 ?? 0) > 0.4) {
+  if ((weight.delta3 ?? 0) < thresholds.falseCutWeightDropDelta3 && (bodyFat.delta3 ?? 0) > thresholds.falseCutFatRiseDelta3) {
     pushSignal(signals, 'false_cut_risk', {
       severity: 'high',
       confidence: getConfidence('weight', weight.seriesLength, 2),
@@ -477,19 +488,19 @@ export function analyzeBodySignals(latest, history = [], trainingContext = {}) {
     })
   }
 
-  const baselineDrivenTightening = (bodyFat.deviationFromBaseline28 ?? 0) > 1 && (weight.deviationFromBaseline28 ?? 0) > 0.6
+  const baselineDrivenTightening = (bodyFat.deviationFromBaseline28 ?? 0) > thresholds.baselineDrivenTighteningFatDeviation && (weight.deviationFromBaseline28 ?? 0) > thresholds.baselineDrivenTighteningWeightDeviation
   const bandDrivenTightening = bodyFat.baselinePosition === 'above_band' && weight.baselinePosition === 'above_band'
   const recoveryBandDrivenTightening = trainingContext.recoveryDay
     && bodyFat.baselinePosition === 'above_band'
     && weight.baselinePosition !== 'below_band'
-    && (bodyFat.delta3 ?? 0) >= 0.4
-  if (((weight.delta3 ?? 0) > 0.4 && (bodyFat.delta3 ?? 0) > 0.4) || baselineDrivenTightening || bandDrivenTightening || recoveryBandDrivenTightening) {
+    && (bodyFat.delta3 ?? 0) >= thresholds.recoveryBandDrivenFatDelta3
+  if (((weight.delta3 ?? 0) > thresholds.tighteningWeightRiseDelta3 && (bodyFat.delta3 ?? 0) > thresholds.tighteningFatRiseDelta3) || baselineDrivenTightening || bandDrivenTightening || recoveryBandDrivenTightening) {
     pushSignal(signals, 'intake_tightening_needed', {
       severity: 'high',
       confidence: getConfidence('weight', weight.seriesLength, baselineDrivenTightening || bandDrivenTightening || recoveryBandDrivenTightening ? 3 : 2),
       evidence: dedupe([
-        (weight.delta3 ?? 0) > 0.4 ? `最近几次体重累计 ${formatSigned(weight.delta3, 1, 'kg')}` : null,
-        (bodyFat.delta3 ?? 0) > 0.4 ? `体脂同步累计 ${formatSigned(bodyFat.delta3, 1, '%')}` : null,
+        (weight.delta3 ?? 0) > thresholds.tighteningWeightRiseDelta3 ? `最近几次体重累计 ${formatSigned(weight.delta3, 1, 'kg')}` : null,
+        (bodyFat.delta3 ?? 0) > thresholds.tighteningFatRiseDelta3 ? `体脂同步累计 ${formatSigned(bodyFat.delta3, 1, '%')}` : null,
         baselineDrivenTightening ? `且体重/体脂都已高于个人基线` : null,
         bandDrivenTightening ? `且体重/体脂都已站上个人波动带上沿` : null,
         recoveryBandDrivenTightening ? `恢复日体脂已站上个人波动带上沿，不能默认按恢复回补处理` : null,
@@ -498,10 +509,10 @@ export function analyzeBodySignals(latest, history = [], trainingContext = {}) {
   }
 
   const recoveryRebound =
-    (weight.delta3 ?? 0) > 0.3
-    && (bodyFat.delta3 ?? 0) <= 0
-    && Math.abs(weight.deviationFromBaseline28 ?? 0) <= 1.2
-    && Math.abs(bodyFat.deviationFromBaseline28 ?? 0) <= 0.8
+    (weight.delta3 ?? 0) > thresholds.reboundWeightRiseDelta3
+    && (bodyFat.delta3 ?? 0) <= thresholds.reboundFatNonIncreaseDelta3
+    && Math.abs(weight.deviationFromBaseline28 ?? 0) <= thresholds.reboundWeightNearBaseline
+    && Math.abs(bodyFat.deviationFromBaseline28 ?? 0) <= thresholds.reboundFatNearBaseline
 
   if (recoveryRebound) {
     pushSignal(signals, 'recovery_rebound_likely', {
@@ -524,7 +535,7 @@ export function analyzeBodySignals(latest, history = [], trainingContext = {}) {
             ...signals
               .filter(signal => ['false_cut_risk', 'muscle_drop_confirmed', 'bmr_low'].includes(signal.key))
               .map(signal => signal.confidence ?? 0.5),
-          ) + 0.05,
+          ) + thresholds.metabolismProtectionConfidenceBoost,
           0,
           0.99,
         ),
@@ -543,20 +554,20 @@ export function analyzeBodySignals(latest, history = [], trainingContext = {}) {
     return LOW_CONFIDENCE_KEYS.has(metricKey)
   })
   const hasPriorityRiskSignal = signals.some(signal => ['false_cut_risk', 'intake_tightening_needed', 'metabolism_protection_needed', 'fat_rising_persistent', 'recovery_rebound_likely'].includes(signal.key))
-  if (noisyMetricSignals.length >= 2 && !hasPriorityRiskSignal) {
+  if (noisyMetricSignals.length >= thresholds.noiseHighMinSignals && !hasPriorityRiskSignal) {
     pushSignal(signals, 'noise_high', {
       severity: 'medium',
-      confidence: 0.6,
+      confidence: thresholds.noiseHighConfidence,
       evidence: ['最近更多是高噪声指标在波动，先按稳定执行处理，不根据单次波动做大动作。'],
     })
   }
 
-  const stateStage = getStateStage(signals, trainingContext, features)
+  const stateStage = getStateStage(signals, trainingContext, features, thresholds)
   const primaryMode = getPrimaryMode(signals, trainingContext, stateStage)
   const modeMeta = getModeMeta(primaryMode, stateStage)
   const { trainingLoad, trainingLoadLabel } = getTrainingLoad(trainingContext)
   const intakeStrategy = getIntakeStrategy(primaryMode, trainingContext)
-  const evidenceGroups = collectEvidenceGroups(features, signals, stateStage)
+  const evidenceGroups = collectEvidenceGroups(features, signals, stateStage, thresholds)
   const secondaryFlags = signals
     .filter(signal => !['metabolism_protection_needed', 'noise_high'].includes(signal.key))
     .map(signal => signal.key)
@@ -565,7 +576,7 @@ export function analyzeBodySignals(latest, history = [], trainingContext = {}) {
     clamp(
       signals.length
         ? signals.reduce((sum, signal) => sum + (signal.confidence ?? 0.5), 0) / signals.length
-        : 0.7,
+        : thresholds.defaultDecisionConfidence,
       0,
       0.98,
     ),
