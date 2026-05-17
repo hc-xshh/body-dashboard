@@ -1,5 +1,25 @@
 [
   {
+    "date": "2026-05-18",
+    "time": "07:33",
+    "weekday": "周一",
+    "weight": 68.85,
+    "bodyFat": 21.2,
+    "bmi": 24.3,
+    "bmr": 1521,
+    "muscle": 51.6,
+    "visceralFat": 10,
+    "subcutaneousFat": 14.1,
+    "protein": 16.6,
+    "skeletalMuscleRate": 44.1,
+    "leanBodyMass": 54.3,
+    "water": 53.9,
+    "bone": 2.7,
+    "score": 76,
+    "bodyAge": 30,
+    "bodyType": "标准型"
+  },
+  {
     "date": "2026-05-17",
     "time": "08:23",
     "weekday": "周日",
