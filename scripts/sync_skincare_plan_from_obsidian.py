@@ -28,7 +28,7 @@ def parse_table(lines: list[str], start: int) -> tuple[list[dict[str, str]], int
 
 
 def extract_fenced_steps(text: str, heading: str) -> list[str]:
-    pattern = re.compile(rf'###\s*{re.escape(heading)}\s*\n```\n(.*?)\n```', re.S)
+    pattern = re.compile(rf'###\s*{re.escape(heading)}\s*\n(?:<!--.*?-->\s*\n|\s*\n)*```\n(.*?)\n```', re.S)
     match = pattern.search(text)
     if not match:
         raise SystemExit(f'Missing fenced routine block for {heading}')

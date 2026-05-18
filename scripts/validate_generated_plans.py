@@ -27,16 +27,26 @@ def main() -> None:
     ensure('BODY_DASHBOARD_SYNC_CONTRACT:BEGIN' in training_note, 'training source contract missing begin marker')
     ensure('contract_id: body-dashboard/training-plan' in training_note, 'training source contract id missing')
     ensure('禁止删除组间休息列' in training_note, 'training source guardrail text missing')
+    ensure('AI_EDITABLE_SECTION:BEGIN training_weekday_blocks' in training_note, 'training editable section begin marker missing')
+    ensure('AI_EDITABLE_SECTION:END training_weekday_blocks' in training_note, 'training editable section end marker missing')
 
     diet_note = Path(diet['sourceNote']).read_text()
     ensure('BODY_DASHBOARD_SYNC_CONTRACT:BEGIN' in diet_note, 'diet source contract missing begin marker')
     ensure('contract_id: body-dashboard/diet-plan' in diet_note, 'diet source contract id missing')
     ensure('只改餐单表里的时间、餐次、搭配、调整说明' in diet_note, 'diet source guardrail text missing')
+    ensure('AI_EDITABLE_SECTION:BEGIN diet_schedule_table' in diet_note, 'diet editable section begin marker missing')
+    ensure('AI_EDITABLE_SECTION:END diet_schedule_table' in diet_note, 'diet editable section end marker missing')
 
     skincare_note = Path(skincare['sourceNote']).read_text()
     ensure('BODY_DASHBOARD_SYNC_CONTRACT:BEGIN' in skincare_note, 'skincare source contract missing begin marker')
     ensure('contract_id: body-dashboard/skincare-plan' in skincare_note, 'skincare source contract id missing')
     ensure('晨间流程必须保留防晒作为最后一步' in skincare_note, 'skincare source guardrail text missing')
+    ensure('AI_EDITABLE_SECTION:BEGIN skincare_morning_routine' in skincare_note, 'skincare morning editable section begin marker missing')
+    ensure('AI_EDITABLE_SECTION:END skincare_morning_routine' in skincare_note, 'skincare morning editable section end marker missing')
+    ensure('AI_EDITABLE_SECTION:BEGIN skincare_deep_clean_routine' in skincare_note, 'skincare deep clean editable section begin marker missing')
+    ensure('AI_EDITABLE_SECTION:END skincare_deep_clean_routine' in skincare_note, 'skincare deep clean editable section end marker missing')
+    ensure('AI_EDITABLE_SECTION:BEGIN skincare_weekly_table' in skincare_note, 'skincare weekly table editable section begin marker missing')
+    ensure('AI_EDITABLE_SECTION:END skincare_weekly_table' in skincare_note, 'skincare weekly table editable section end marker missing')
 
     for day in weekdays:
         ensure(day in training, f'training missing weekday: {day}')
