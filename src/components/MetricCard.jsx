@@ -11,8 +11,8 @@ export default function MetricCard({ label, value, unit, status, sub, reference 
         </span>
         {unit && <span className="mb-0.5 text-xs text-slate-500 sm:text-sm">{unit}</span>}
       </div>
-      {sub && <span className="text-[11px] leading-relaxed sm:text-xs" style={{ color }}>{sub}</span>}
       {reference && <span className="text-[11px] leading-relaxed text-slate-500 sm:text-xs">参考：{reference}</span>}
+      {sub && <span className="text-[11px] leading-relaxed sm:text-xs" style={{ color }}>当前：{sub}</span>}
     </div>
   )
 }

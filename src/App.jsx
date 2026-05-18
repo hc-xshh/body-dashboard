@@ -66,12 +66,12 @@ const trendMetrics2 = [
 ]
 
 const metricReferenceMap = {
-  weight: '以趋势稳定为主',
+  weight: '以近30天稳定区间为主',
   bodyFat: '10-20%',
   bmi: '18.5-23.9',
   bmr: '≥1600 kcal',
   visceralFat: '≤9',
-  water: '≥55%',
+  water: '55-65%',
   bone: '≥2.8 kg',
   score: '≥80',
 }
@@ -163,14 +163,14 @@ export default function App() {
         <section id="story-status" className="scroll-mt-24">
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">核心指标</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <MetricCard label="体重" value={latest.weight} unit="kg" status="na" reference={metricReferenceMap.weight} />
-            <MetricCard label="体脂率" value={latest.bodyFat} unit="%" status={getBodyFatStatus(latest.bodyFat)} sub={latest.bodyFat > 20 ? '偏高' : '正常'} reference={metricReferenceMap.bodyFat} />
-            <MetricCard label="BMI" value={latest.bmi} status="na" reference={metricReferenceMap.bmi} />
+            <MetricCard label="体重" value={latest.weight} unit="kg" status="na" sub="结合近30天趋势判断" reference={metricReferenceMap.weight} />
+            <MetricCard label="体脂率" value={latest.bodyFat} unit="%" status={getBodyFatStatus(latest.bodyFat)} sub={latest.bodyFat > 20 ? '偏高' : latest.bodyFat < 10 ? '偏低' : '正常'} reference={metricReferenceMap.bodyFat} />
+            <MetricCard label="BMI" value={latest.bmi} status="na" sub={latest.bmi > 23.9 ? '偏高' : latest.bmi < 18.5 ? '偏低' : '正常'} reference={metricReferenceMap.bmi} />
             <MetricCard label="基础代谢" value={latest.bmr} unit="kcal" status={getBMRStatus(latest.bmr)} sub={latest.bmr < 1550 ? '偏低' : '正常'} reference={metricReferenceMap.bmr} />
             <MetricCard label="内脏脂肪" value={latest.visceralFat} status={getVisceralFatStatus(latest.visceralFat)} sub={latest.visceralFat >= 10 ? '偏高' : '正常'} reference={metricReferenceMap.visceralFat} />
-            <MetricCard label="水分" value={latest.water} unit="%" status={getWaterStatus(latest.water)} sub={latest.water < 55 ? '偏低' : '正常'} reference={metricReferenceMap.water} />
-            <MetricCard label="骨量" value={latest.bone} unit="kg" status={getBoneStatus(latest.bone)} sub={latest.bone < 2.8 ? '不足' : '正常'} reference={metricReferenceMap.bone} />
-            <MetricCard label="综合得分" value={latest.score} status={getScoreStatus(latest.score)} sub={`身体年龄 ${latest.bodyAge ?? '—'} 岁`} reference={metricReferenceMap.score} />
+            <MetricCard label="水分" value={latest.water} unit="%" status={getWaterStatus(latest.water)} sub={latest.water < 55 ? '偏低' : latest.water > 65 ? '偏高' : '正常'} reference={metricReferenceMap.water} />
+            <MetricCard label="骨量" value={latest.bone} unit="kg" status={getBoneStatus(latest.bone)} sub={latest.bone < 2.8 ? '偏低' : '正常'} reference={metricReferenceMap.bone} />
+            <MetricCard label="综合得分" value={latest.score} status={getScoreStatus(latest.score)} sub={latest.score < 80 ? '偏低' : '正常'} reference={metricReferenceMap.score} />
           </div>
         </section>
 
@@ -199,7 +199,7 @@ export default function App() {
               reminders={[
                 '先完成今天卡片里的内容，再去看趋势图，不要反过来。',
                 '恢复日也算执行日，今天的目标是促进恢复，不是硬凑训练量。',
-                '力量训练模块按卡片里的组间休息执行，尽量不要边刷手机边把休息拖太长。',
+                '力量训练动作后面已标组间休息，尽量不要边刷手机边把休息拖太长。',
               ]}
               badge={trainingPlan.badge}
               accent="rose"
