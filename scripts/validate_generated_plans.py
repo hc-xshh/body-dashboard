@@ -23,9 +23,28 @@ def main() -> None:
     skincare = load('skincarePlan.generated.json')
     weekdays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
 
+    training_note = Path('/home/xs/knowledge_workspace/health_vault/fitness/一周居家健身计划_哑铃版.md').read_text()
+    ensure('BODY_DASHBOARD_SYNC_CONTRACT:BEGIN' in training_note, 'training source contract missing begin marker')
+    ensure('contract_id: body-dashboard/training-plan' in training_note, 'training source contract id missing')
+    ensure('禁止删除组间休息列' in training_note, 'training source guardrail text missing')
+
+    diet_note = Path(diet['sourceNote']).read_text()
+    ensure('BODY_DASHBOARD_SYNC_CONTRACT:BEGIN' in diet_note, 'diet source contract missing begin marker')
+    ensure('contract_id: body-dashboard/diet-plan' in diet_note, 'diet source contract id missing')
+    ensure('只改餐单表里的时间、餐次、搭配、调整说明' in diet_note, 'diet source guardrail text missing')
+
+    skincare_note = Path(skincare['sourceNote']).read_text()
+    ensure('BODY_DASHBOARD_SYNC_CONTRACT:BEGIN' in skincare_note, 'skincare source contract missing begin marker')
+    ensure('contract_id: body-dashboard/skincare-plan' in skincare_note, 'skincare source contract id missing')
+    ensure('晨间流程必须保留防晒作为最后一步' in skincare_note, 'skincare source guardrail text missing')
+
     for day in weekdays:
         ensure(day in training, f'training missing weekday: {day}')
         ensure(training[day].get('items'), f'training items empty: {day}')
+        for item in training[day].get('items', []):
+            steps = item.get('steps', [])
+            if item.get('title') in {'主训练', '腹肌', '腹肌专项'} and steps:
+                ensure(any('秒' in step for step in steps), f'training rest annotation missing in {day} / {item.get("title")}')
 
     ensure(isinstance(diet.get('items'), list) and len(diet['items']) >= 6, 'diet items too few')
     required_titles = {'早餐', '午餐', '下午加餐', '训练前', '补充', '晚餐'}
@@ -34,6 +53,7 @@ def main() -> None:
     ensure(any(t == '午餐' for t in titles), 'diet missing 午餐')
     ensure(any(t == '晚餐' for t in titles), 'diet missing 晚餐')
     ensure(diet.get('sourceNote'), 'diet missing sourceNote')
+    ensure(any(item.get('title') == '补充' and item.get('time') == '训练后' and '蛋白' in item.get('detail', '') for item in diet['items']), 'diet missing post-workout protein slot')
 
     ensure(isinstance(skincare.get('morning'), list) and len(skincare['morning']) >= 4, 'skincare morning steps invalid')
     ensure('防晒' in ''.join(skincare['morning']), 'skincare morning missing sunscreen step')
@@ -43,10 +63,7 @@ def main() -> None:
         ensure(skincare['evening'][day].get('steps'), f'skincare steps empty: {day}')
         ensure(not any(step == '停三酸' for step in skincare['evening'][day].get('steps', [])), f'skincare still contains raw 停三酸 token: {day}')
 
-    note_text = Path(skincare['sourceNote']).read_text()
-    ensure('| 日期 | 训练安排 | 护肤安排 | 三酸 |' in note_text, 'skincare source note weekly plan table missing')
-
-    diet_note = Path(diet['sourceNote']).read_text()
+    ensure('| 日期 | 训练安排 | 护肤安排 | 三酸 |' in skincare_note, 'skincare source note weekly plan table missing')
     ensure('| 时间 | 餐次/环节 | 搭配 | 调整说明 |' in diet_note, 'diet source note schedule table missing')
 
     print('SYNC VALIDATION: PASS')
