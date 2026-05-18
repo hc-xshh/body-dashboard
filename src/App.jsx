@@ -65,6 +65,17 @@ const trendMetrics2 = [
   { key: 'leanBodyMass', label: '去脂体重(kg)' },
 ]
 
+const metricReferenceMap = {
+  weight: '以趋势稳定为主',
+  bodyFat: '10-20%',
+  bmi: '18.5-23.9',
+  bmr: '≥1600 kcal',
+  visceralFat: '≤9',
+  water: '≥55%',
+  bone: '≥2.8 kg',
+  score: '≥80',
+}
+
 const skincareItems = [
   {
     title: '晨间流程',
@@ -152,14 +163,14 @@ export default function App() {
         <section id="story-status" className="scroll-mt-24">
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">核心指标</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <MetricCard label="体重" value={latest.weight} unit="kg" status="na" />
-            <MetricCard label="体脂率" value={latest.bodyFat} unit="%" status={getBodyFatStatus(latest.bodyFat)} sub={latest.bodyFat > 20 ? '偏高' : '正常'} />
-            <MetricCard label="BMI" value={latest.bmi} status="na" />
-            <MetricCard label="基础代谢" value={latest.bmr} unit="kcal" status={getBMRStatus(latest.bmr)} sub={latest.bmr < 1550 ? '偏低' : '正常'} />
-            <MetricCard label="内脏脂肪" value={latest.visceralFat} status={getVisceralFatStatus(latest.visceralFat)} sub={latest.visceralFat >= 10 ? '偏高' : '正常'} />
-            <MetricCard label="水分" value={latest.water} unit="%" status={getWaterStatus(latest.water)} sub={latest.water < 55 ? '偏低' : '正常'} />
-            <MetricCard label="骨量" value={latest.bone} unit="kg" status={getBoneStatus(latest.bone)} sub={latest.bone < 2.8 ? '不足' : '正常'} />
-            <MetricCard label="综合得分" value={latest.score} status={getScoreStatus(latest.score)} sub={`身体年龄 ${latest.bodyAge ?? '—'} 岁`} />
+            <MetricCard label="体重" value={latest.weight} unit="kg" status="na" reference={metricReferenceMap.weight} />
+            <MetricCard label="体脂率" value={latest.bodyFat} unit="%" status={getBodyFatStatus(latest.bodyFat)} sub={latest.bodyFat > 20 ? '偏高' : '正常'} reference={metricReferenceMap.bodyFat} />
+            <MetricCard label="BMI" value={latest.bmi} status="na" reference={metricReferenceMap.bmi} />
+            <MetricCard label="基础代谢" value={latest.bmr} unit="kcal" status={getBMRStatus(latest.bmr)} sub={latest.bmr < 1550 ? '偏低' : '正常'} reference={metricReferenceMap.bmr} />
+            <MetricCard label="内脏脂肪" value={latest.visceralFat} status={getVisceralFatStatus(latest.visceralFat)} sub={latest.visceralFat >= 10 ? '偏高' : '正常'} reference={metricReferenceMap.visceralFat} />
+            <MetricCard label="水分" value={latest.water} unit="%" status={getWaterStatus(latest.water)} sub={latest.water < 55 ? '偏低' : '正常'} reference={metricReferenceMap.water} />
+            <MetricCard label="骨量" value={latest.bone} unit="kg" status={getBoneStatus(latest.bone)} sub={latest.bone < 2.8 ? '不足' : '正常'} reference={metricReferenceMap.bone} />
+            <MetricCard label="综合得分" value={latest.score} status={getScoreStatus(latest.score)} sub={`身体年龄 ${latest.bodyAge ?? '—'} 岁`} reference={metricReferenceMap.score} />
           </div>
         </section>
 
@@ -188,6 +199,7 @@ export default function App() {
               reminders={[
                 '先完成今天卡片里的内容，再去看趋势图，不要反过来。',
                 '恢复日也算执行日，今天的目标是促进恢复，不是硬凑训练量。',
+                '力量训练模块按卡片里的组间休息执行，尽量不要边刷手机边把休息拖太长。',
               ]}
               badge={trainingPlan.badge}
               accent="rose"
@@ -257,37 +269,20 @@ export default function App() {
                 </tr>
               </thead>
               <tbody>
-                {sorted.map((d, i) => {
-                  const decision = historyDecisionMap.get(d.date)
-
+                {sorted.map((row) => {
+                  const decision = historyDecisionMap.get(row.date)
                   return (
-                    <tr key={d.date} className={`border-b border-dark-700 hover:bg-dark-700/50 transition-colors ${i === 0 ? 'text-white' : 'text-slate-400'}`}>
-                      <td className="px-4 py-3 font-medium">{d.date}<span className="text-slate-600 text-xs ml-1">{d.weekday}</span></td>
-                      <td className="px-4 py-3 min-w-[220px]">
-                        {decision ? (
-                          <div className="flex flex-col gap-1">
-                            <div className="flex flex-wrap gap-1.5">
-                              <span className="inline-flex rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-[11px] text-accent-light">
-                                {decision.stageLabel}
-                              </span>
-                              <span className="inline-flex rounded-full border border-dark-600 bg-dark-900/70 px-2 py-0.5 text-[11px] text-slate-200">
-                                {decision.badge}
-                              </span>
-                            </div>
-                            <div className="text-xs text-slate-500">
-                              {decision.trainingLoadLabel} · intake={decision.intakeStrategy}
-                            </div>
-                          </div>
-                        ) : '—'}
-                      </td>
-                      <td className="px-4 py-3">{d.weight ?? '—'}</td>
-                      <td className="px-4 py-3">{d.bodyFat ?? '—'}</td>
-                      <td className="px-4 py-3">{d.bmi ?? '—'}</td>
-                      <td className="px-4 py-3">{d.muscle ?? '—'}</td>
-                      <td className="px-4 py-3">{d.visceralFat ?? '—'}</td>
-                      <td className="px-4 py-3">{d.water ?? '—'}</td>
-                      <td className="px-4 py-3">{d.bone ?? '—'}</td>
-                      <td className="px-4 py-3">{d.score ?? '—'}</td>
+                    <tr key={`${row.date}-${row.time ?? ''}`} className="border-b border-dark-700/70 last:border-b-0">
+                      <td className="px-4 py-3 text-slate-300">{row.date}</td>
+                      <td className="px-4 py-3 text-slate-300">{decision ? `${decision.stageLabel} / ${decision.badge}` : '—'}</td>
+                      <td className="px-4 py-3 text-slate-300">{row.weight}</td>
+                      <td className="px-4 py-3 text-slate-300">{row.bodyFat}</td>
+                      <td className="px-4 py-3 text-slate-300">{row.bmi}</td>
+                      <td className="px-4 py-3 text-slate-300">{row.muscle}</td>
+                      <td className="px-4 py-3 text-slate-300">{row.visceralFat}</td>
+                      <td className="px-4 py-3 text-slate-300">{row.water}</td>
+                      <td className="px-4 py-3 text-slate-300">{row.bone}</td>
+                      <td className="px-4 py-3 text-slate-300">{row.score}</td>
                     </tr>
                   )
                 })}
@@ -296,7 +291,7 @@ export default function App() {
           </div>
         </section>
 
-        <footer className="text-center text-xs text-slate-700 pb-4">
+        <footer className="pb-3 text-center text-xs leading-relaxed text-slate-500 sm:pb-4">
           数据由 Hermes Agent 自动解析体测截图生成 · 饮食/训练/护肤建议基于 Obsidian 现有方案 + 当日体测动态展示 · 仅供个人参考
         </footer>
       </main>

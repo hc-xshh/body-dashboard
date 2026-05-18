@@ -36,8 +36,15 @@ export default function DailyPlanPanel({ title, subtitle, items = [], reminders 
       <div className={compact ? 'space-y-3' : 'space-y-4'}>
         {items.map((item, index) => (
           <div key={`${item.title}-${index}`} className="rounded-xl border border-dark-700 bg-dark-900/50 px-3.5 py-3 sm:px-4">
-            <div className="mb-1.5 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-              <div className="text-sm font-medium text-white">{item.title}</div>
+            <div className="mb-1.5 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+              <div>
+                <div className="text-sm font-medium text-white">{item.title}</div>
+                {item.rest && (
+                  <div className="mt-1 inline-flex rounded-full border border-rose-500/20 bg-rose-500/10 px-2 py-0.5 text-[11px] text-rose-200">
+                    组间休息：{item.rest}
+                  </div>
+                )}
+              </div>
               {item.time && <div className="text-xs text-slate-500 sm:whitespace-nowrap">{item.time}</div>}
             </div>
             {item.detail && <p className="text-sm leading-relaxed text-slate-300">{item.detail}</p>}
