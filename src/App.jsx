@@ -88,7 +88,9 @@ const skincareItems = [
     time: skincarePlan.evening.duration,
     detail: skincarePlan.evening.emphasis ?? skincarePlan.evening.note,
     steps: skincarePlan.evening.steps,
-    note: skincarePlan.evening.note,
+    note: skincarePlan.evening.emphasis && skincarePlan.evening.note !== skincarePlan.evening.emphasis
+      ? skincarePlan.evening.note
+      : undefined,
   },
 ]
 

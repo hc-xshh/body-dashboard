@@ -55,6 +55,10 @@ def main() -> None:
             steps = item.get('steps', [])
             if item.get('title') in {'主训练', '腹肌', '腹肌专项'} and steps:
                 ensure(any('秒' in step for step in steps), f'training rest annotation missing in {day} / {item.get("title")}')
+        if day in {'周一', '周二', '周四', '周五'}:
+            titles = {item.get('title') for item in training[day].get('items', [])}
+            ensure('热身' in titles, f'training warmup missing in {day}')
+            ensure('拉伸' in titles, f'training stretch missing in {day}')
 
     ensure(isinstance(diet.get('items'), list) and len(diet['items']) >= 6, 'diet items too few')
     required_titles = {'早餐', '午餐', '下午加餐', '训练前', '补充', '晚餐'}

@@ -98,6 +98,29 @@ def extract_sections(lines: list[str], weekday: str) -> dict[str, dict]:
     return sections
 
 
+def normalize_section_key(text: str) -> str:
+    return (
+        text.strip()
+        .replace('（', '(')
+        .replace('）', ')')
+        .replace('：', ':')
+        .replace(' ', '')
+    )
+
+
+def resolve_section(sections: dict[str, dict], key: str) -> dict | None:
+    if key in sections:
+        return sections[key]
+    normalized_target = normalize_section_key(key)
+    for section_key, section in sections.items():
+        normalized_key = normalize_section_key(section_key)
+        if normalized_key == normalized_target:
+            return section
+        if normalized_key.startswith(normalized_target):
+            return section
+    return None
+
+
 def rows_to_steps(rows: list[dict[str, str]], name_key: str, rep_key: str, rest_key: str | None = None) -> list[str]:
     steps = []
     for row in rows:
@@ -120,7 +143,7 @@ def build_weekday_plan(weekday: str, block: str) -> dict:
     items = []
 
     def add_item(title: str, section_key: str, *, row_name='动作', row_rep='组数×次数', rest_key='组间休息', detail_mode=False, force_title: str | None = None):
-        section = sections.get(section_key)
+        section = resolve_section(sections, section_key)
         if not section:
             return
         item_title = force_title or title
