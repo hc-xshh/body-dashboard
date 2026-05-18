@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "sync:training": "python3 scripts/sync_training_plan_from_obsidian.py",
+    "build": "npm run sync:training && vite build",
     "lint": "eslint .",
     "replay:rules": "node scripts/replay-rules-engine.js",
     "preview": "vite preview"
