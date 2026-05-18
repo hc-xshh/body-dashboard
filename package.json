@@ -6,10 +6,13 @@
   "scripts": {
     "dev": "vite",
     "sync:training": "python3 scripts/sync_training_plan_from_obsidian.py",
-    "build": "npm run sync:training && vite build",
+    "build": "npm run sync:plans && vite build",
     "lint": "eslint .",
     "replay:rules": "node scripts/replay-rules-engine.js",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sync:diet": "python3 scripts/sync_diet_plan_from_obsidian.py",
+    "sync:skincare": "python3 scripts/sync_skincare_plan_from_obsidian.py",
+    "sync:plans": "npm run sync:training && npm run sync:diet && npm run sync:skincare && python3 scripts/validate_generated_plans.py"
   },
   "dependencies": {
     "echarts": "^6.0.0",

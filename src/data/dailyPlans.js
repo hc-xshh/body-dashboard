@@ -1,5 +1,7 @@
 import { analyzeBodySignals } from '../utils/rulesEngine'
 import generatedTrainingPlans from './trainingPlans.generated.json'
+import generatedDietPlan from './dietPlan.generated.json'
+import generatedSkincarePlan from './skincarePlan.generated.json'
 
 const WEEKDAY_ALIAS = {
   星期一: '周一',
@@ -31,6 +33,8 @@ export const weeklyTrainingLabel = {
 }
 
 const trainingPlans = generatedTrainingPlans
+const baseDietPlan = generatedDietPlan
+const generatedSkincare = generatedSkincarePlan
 
 function cloneItems(items) {
   return items.map(item => ({ ...item }))
@@ -127,21 +131,8 @@ export function getTrainingPlan(weekday) {
 }
 
 export function getDietPlan(latest, weekday, trainingLabel, history = []) {
-  const items = cloneItems([
-    { time: '08:10', title: '早餐', detail: '西麦即食纯燕麦 50g + 牛奶 500ml' },
-    { time: '早餐后', title: '补充', detail: '钙片 3粒 + 男士每日营养包 1袋 + 叶黄素 1粒 + 复合B族 1粒 + 鱼油 1粒 + 洋车前子壳粉 5g' },
-    { time: '12:00', title: '午餐', detail: '高蛋白轻食套餐：鸡胸肉 150g + 杂粮饭 100g + 蔬菜 200g' },
-    { time: '15:30', title: '下午加餐', detail: 'WonderLab 双层脆心谷物棒 2根' },
-    { time: '运动前', title: '训练前补给', detail: '香蕉 1根' },
-    { time: '训练后', title: '训练后补充', detail: '乳清蛋白粉 2.5 勺' },
-    { time: '20:00', title: '晚餐', detail: '岩烤鸡胸 + 新鲜时蔬 + 杂粮饭套餐（含鸡蛋）' },
-    { time: '晚餐后', title: '补充', detail: '钙片 3粒' },
-  ])
-
-  const reminders = [
-    '午餐不要用代餐奶昔替代正餐。',
-    '晚餐继续高蛋白，外卖统一备注少盐少油。',
-  ]
+  const items = cloneItems(baseDietPlan.items)
+  const reminders = [...baseDietPlan.reminders]
 
   const strengthDay = isStrengthDay(weekday)
   const cardioDay = isCardioDay(weekday)
@@ -157,9 +148,13 @@ export function getDietPlan(latest, weekday, trainingLabel, history = []) {
 
   const lunch = items.find(item => item.title === '午餐')
   const snack = items.find(item => item.title === '下午加餐')
-  const preWorkout = items.find(item => item.title === '训练前补给')
-  const postWorkout = items.find(item => item.title === '训练后补充')
+  const preWorkout = items.find(item => item.title.includes('训练前'))
+  const postWorkout = items.find(item => item.title === '补充' && item.time === '训练后')
   const dinner = items.find(item => item.title === '晚餐')
+
+  if (!lunch || !snack || !preWorkout || !postWorkout || !dinner) {
+    throw new Error('Generated diet plan missing required meal slots')
+  }
 
   if (lowerBodyDay) {
     lunch.detail = '高蛋白轻食套餐：鸡胸肉 150-180g + 杂粮饭 120-150g + 蔬菜 200g'
@@ -296,76 +291,20 @@ export function getDietPlan(latest, weekday, trainingLabel, history = []) {
 
   return {
     badge: decisionBadge,
-    goal: '保肌肉 > 保代谢 > 温和减脂',
+    goal: baseDietPlan.goal,
     subtitle: `${focusText} · ${trendText} · 当前处于 ${stageLabel}，负荷背景为 ${trainingLoadLabel}，今日 intake 策略为 ${intakeStrategy}，今天按 ${decisionBadge} 模式细化餐次，训练主题为 ${trainingLabel}。`,
     items,
     reminders: uniqueReminders,
     engine: rules.decision,
+    sourceNote: baseDietPlan.sourceNote,
   }
-}
-
-const morningRoutine = [
-  'B5洁面',
-  '收敛水',
-  'MELA B3 烟酰胺亮白精华',
-  '水油平衡乳',
-  'SPF50+ 防晒',
-]
-
-const eveningRoutine = {
-  周一: {
-    theme: '三酸精华夜',
-    duration: '约 10-15 分钟',
-    steps: ['清透洁面', '收敛水', '三酸精华', 'MELA B3 烟酰胺亮白精华', 'B5局部点涂（可选）', '水油平衡乳'],
-    note: '属于功效夜，注意避开眼周。',
-  },
-  周二: {
-    theme: '停三酸修护夜',
-    duration: '约 8-12 分钟',
-    steps: ['清透洁面', '收敛水', 'MELA B3 烟酰胺亮白精华', 'B5局部点涂（可选）', '水油平衡乳'],
-    note: '给皮肤留恢复窗口。',
-  },
-  周三: {
-    theme: '深度清洁夜',
-    duration: '约 40-50 分钟',
-    steps: ['清透洁面', '白泥面膜 10-15 分钟', '清痘面膜 15-20 分钟', '收敛水', 'MELA B3 烟酰胺亮白精华', 'B5局部点涂（可选）', '水油平衡乳'],
-    note: '今天是主动恢复日，适合做每周一次深度清洁。',
-    emphasis: '今晚不做三酸，重点做深度清洁 + 修护。',
-  },
-  周四: {
-    theme: '三酸精华夜',
-    duration: '约 10-15 分钟',
-    steps: ['清透洁面', '收敛水', '三酸精华', 'MELA B3 烟酰胺亮白精华', 'B5局部点涂（可选）', '水油平衡乳'],
-    note: '继续隔日使用三酸。',
-  },
-  周五: {
-    theme: '停三酸修护夜',
-    duration: '约 8-12 分钟',
-    steps: ['清透洁面', '收敛水', 'MELA B3 烟酰胺亮白精华', 'B5局部点涂（可选）', '水油平衡乳'],
-    note: '保持控油和淡痘印节奏。',
-  },
-  周六: {
-    theme: '三酸精华夜',
-    duration: '约 10-15 分钟',
-    steps: ['清透洁面', '收敛水', '三酸精华', 'MELA B3 烟酰胺亮白精华', 'B5局部点涂（可选）', '水油平衡乳'],
-    note: '固定有氧日后继续功效护理。',
-  },
-  周日: {
-    theme: '停三酸修护夜',
-    duration: '约 8-12 分钟',
-    steps: ['清透洁面', '收敛水', 'MELA B3 烟酰胺亮白精华', 'B5全脸薄涂（可选）', '水油平衡乳'],
-    note: '休息日以修护为主。',
-  },
 }
 
 export function getSkincarePlan(weekday) {
   return {
-    morning: morningRoutine,
-    evening: eveningRoutine[weekday] ?? eveningRoutine.周三,
-    reminders: [
-      '油痘肌使用 B5 先乳化，优先局部薄涂。',
-      '白天出门必须做足防晒，帽子/口罩属于加分项。',
-      '出现泛红紧绷时，暂停三酸并切回修护模式。',
-    ],
+    morning: generatedSkincare.morning,
+    evening: generatedSkincare.evening[weekday] ?? generatedSkincare.evening.周三,
+    reminders: generatedSkincare.reminders,
+    sourceNote: generatedSkincare.sourceNote,
   }
 }
