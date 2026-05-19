@@ -36,24 +36,6 @@ const metricReferenceMap = {
   score: '≥80',
 }
 
-const skincareItems = [
-  {
-    title: '晨间流程',
-    time: '出门前',
-    detail: '温和控油 + 美白 + 防晒，作为每天固定流程。',
-    steps: skincarePlan.morning,
-  },
-  {
-    title: `夜间流程 · ${skincarePlan.evening.theme}`,
-    time: skincarePlan.evening.duration,
-    detail: skincarePlan.evening.emphasis ?? skincarePlan.evening.note,
-    steps: skincarePlan.evening.steps,
-    note: skincarePlan.evening.emphasis && skincarePlan.evening.note !== skincarePlan.evening.emphasis
-      ? skincarePlan.evening.note
-      : undefined,
-  },
-]
-
 const storylineSections = [
   {
     id: 'story-status',
@@ -90,32 +72,6 @@ export default function App() {
     measurementSyncBanner,
   } = getMeasurementOverview(measurements, todayDate)
 
-  const skincarePlan = getSkincarePlan(todayLabel)
-  const trainingPlan = getTrainingPlan(todayLabel)
-
-  const safeLatest = latest ?? { weekday: todayLabel }
-  const advice = generateAdvice(safeLatest, prev, sorted, todayLabel)
-  const dietPlan = getDietPlan(safeLatest, todayLabel, todayTraining, sorted)
-  const todayTrainingContext = getTrainingContext(todayLabel)
-  const bodyEngine = latest
-    ? analyzeBodySignals(latest, sorted, todayTrainingContext).decision
-    : {
-        stageLabel: '等待体测',
-        trainingLoadLabel: todayTraining,
-        intakeStrategy: 'await_measurement',
-        confidence: 0,
-      }
-  const historyDecisionMap = new Map(
-    [...sorted]
-      .sort((a, b) => a.date.localeCompare(b.date))
-      .map((record, index, asc) => {
-        const history = asc.slice(0, index + 1)
-        const trainingContext = getTrainingContext(record.weekday)
-        const decision = analyzeBodySignals(record, history, trainingContext).decision
-        return [record.date, decision]
-      }),
-  )
-
   if (!hasMeasurements || !latest) {
     return (
       <div className="min-h-screen bg-dark-900 text-slate-200 font-sans">
@@ -148,6 +104,40 @@ export default function App() {
       </div>
     )
   }
+
+  const skincarePlan = getSkincarePlan(todayLabel)
+  const trainingPlan = getTrainingPlan(todayLabel)
+  const skincareItems = [
+    {
+      title: '晨间流程',
+      time: '出门前',
+      detail: '温和控油 + 美白 + 防晒，作为每天固定流程。',
+      steps: skincarePlan.morning,
+    },
+    {
+      title: `夜间流程 · ${skincarePlan.evening.theme}`,
+      time: skincarePlan.evening.duration,
+      detail: skincarePlan.evening.emphasis ?? skincarePlan.evening.note,
+      steps: skincarePlan.evening.steps,
+      note: skincarePlan.evening.emphasis && skincarePlan.evening.note !== skincarePlan.evening.emphasis
+        ? skincarePlan.evening.note
+        : undefined,
+    },
+  ]
+  const advice = generateAdvice(latest, prev, sorted, todayLabel)
+  const dietPlan = getDietPlan(latest, todayLabel, todayTraining, sorted)
+  const todayTrainingContext = getTrainingContext(todayLabel)
+  const bodyEngine = analyzeBodySignals(latest, sorted, todayTrainingContext).decision
+  const historyDecisionMap = new Map(
+    [...sorted]
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .map((record, index, asc) => {
+        const history = asc.slice(0, index + 1)
+        const trainingContext = getTrainingContext(record.weekday)
+        const decision = analyzeBodySignals(record, history, trainingContext).decision
+        return [record.date, decision]
+      }),
+  )
 
   return (
     <div className="min-h-screen bg-dark-900 text-slate-200 font-sans">

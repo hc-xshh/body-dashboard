@@ -26,3 +26,16 @@ test('derives latest measurement and sync banner when data exists', () => {
   assert.equal(overview.isUsingLatestMeasurement, true)
   assert.equal(overview.measurementSyncBanner.tone, 'emerald')
 })
+
+test('uses amber sync banner when latest measurement is not from today', () => {
+  const overview = getMeasurementOverview([
+    { date: '2026-05-17', time: '07:50' },
+    { date: '2026-05-18', time: '08:05' },
+  ], '2026-05-19')
+
+  assert.equal(overview.hasMeasurements, true)
+  assert.equal(overview.latest?.date, '2026-05-18')
+  assert.equal(overview.isUsingLatestMeasurement, false)
+  assert.equal(overview.measurementSyncBanner.tone, 'amber')
+  assert.match(overview.measurementSyncBanner.text, /沿用 2026-05-18 08:05 的最近一次数据/)
+})
