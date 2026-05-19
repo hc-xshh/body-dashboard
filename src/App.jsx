@@ -12,48 +12,8 @@ import {
 } from './utils/healthAnalysis'
 import { analyzeBodySignals } from './utils/rulesEngine'
 import { getTrainingContext } from './utils/trainingContext'
+import { getMeasurementOverview } from './utils/dashboardState'
 import { getDietPlan, getSkincarePlan, getTodayLabel, getTrainingPlan, weeklyTrainingLabel } from './data/dailyPlans'
-
-const sorted = [...measurements].sort((a, b) => b.date.localeCompare(a.date))
-const latest = sorted[0]
-const prev = sorted[1] ?? null
-
-const todayLabel = getTodayLabel()
-const todayTraining = weeklyTrainingLabel[todayLabel] ?? '按周计划执行'
-const advice = generateAdvice(latest, prev, sorted, todayLabel)
-const skincarePlan = getSkincarePlan(todayLabel)
-const trainingPlan = getTrainingPlan(todayLabel)
-const dietPlan = getDietPlan(latest, todayLabel, todayTraining, sorted)
-const todayTrainingContext = getTrainingContext(todayLabel)
-const bodyEngine = analyzeBodySignals(latest, sorted, todayTrainingContext).decision
-const historyDecisionMap = new Map(
-  [...sorted]
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .map((record, index, asc) => {
-      const history = asc.slice(0, index + 1)
-      const trainingContext = getTrainingContext(record.weekday)
-      const decision = analyzeBodySignals(record, history, trainingContext).decision
-      return [record.date, decision]
-    }),
-)
-
-const todayDate = new Intl.DateTimeFormat('en-CA', {
-  timeZone: 'Asia/Shanghai',
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit',
-}).format(new Date())
-
-const isUsingLatestMeasurement = latest.date === todayDate
-const measurementSyncBanner = isUsingLatestMeasurement
-  ? {
-      tone: 'emerald',
-      text: `今日体测已同步，当前建议基于 ${latest.date} ${latest.time ?? ''} 的最新数据生成。`,
-    }
-  : {
-      tone: 'amber',
-      text: `今日未同步新体测，当前沿用 ${latest.date} ${latest.time ?? ''} 的最近一次数据生成建议。`,
-    }
 
 const trendMetrics1 = [
   { key: 'weight', label: '体重(kg)' },
@@ -113,6 +73,82 @@ const storylineSections = [
 ]
 
 export default function App() {
+  const todayLabel = getTodayLabel()
+  const todayTraining = weeklyTrainingLabel[todayLabel] ?? '按周计划执行'
+  const todayDate = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Shanghai',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date())
+
+  const {
+    hasMeasurements,
+    sorted,
+    latest,
+    prev,
+    measurementSyncBanner,
+  } = getMeasurementOverview(measurements, todayDate)
+
+  const skincarePlan = getSkincarePlan(todayLabel)
+  const trainingPlan = getTrainingPlan(todayLabel)
+
+  const safeLatest = latest ?? { weekday: todayLabel }
+  const advice = generateAdvice(safeLatest, prev, sorted, todayLabel)
+  const dietPlan = getDietPlan(safeLatest, todayLabel, todayTraining, sorted)
+  const todayTrainingContext = getTrainingContext(todayLabel)
+  const bodyEngine = latest
+    ? analyzeBodySignals(latest, sorted, todayTrainingContext).decision
+    : {
+        stageLabel: '等待体测',
+        trainingLoadLabel: todayTraining,
+        intakeStrategy: 'await_measurement',
+        confidence: 0,
+      }
+  const historyDecisionMap = new Map(
+    [...sorted]
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .map((record, index, asc) => {
+        const history = asc.slice(0, index + 1)
+        const trainingContext = getTrainingContext(record.weekday)
+        const decision = analyzeBodySignals(record, history, trainingContext).decision
+        return [record.date, decision]
+      }),
+  )
+
+  if (!hasMeasurements || !latest) {
+    return (
+      <div className="min-h-screen bg-dark-900 text-slate-200 font-sans">
+        <header className="border-b border-dark-700 px-4 py-4 sm:px-6 sm:py-4">
+          <div className="mx-auto max-w-6xl">
+            <h1 className="text-lg font-bold tracking-tight text-white sm:text-xl">Body Dashboard</h1>
+            <p className="mt-0.5 text-xs text-slate-500">Daemon · 身体数据可视化</p>
+          </div>
+        </header>
+
+        <main className="mx-auto flex max-w-3xl flex-col gap-6 px-3 py-8 sm:px-4 sm:py-10">
+          <section className="rounded-2xl border border-amber-500/20 bg-dark-800/80 p-6 shadow-lg shadow-black/20">
+            <div className="flex items-center gap-3">
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/15 text-lg text-amber-200">!</span>
+              <div>
+                <h2 className="text-base font-semibold text-white">暂无体测数据</h2>
+                <p className="mt-1 text-sm leading-relaxed text-slate-400">{measurementSyncBanner.text}</p>
+              </div>
+            </div>
+            <div className="mt-4 rounded-xl border border-dark-600 bg-dark-900/60 p-4 text-sm leading-relaxed text-slate-300">
+              <p>当前页面已进入安全回退状态：不会白屏，也不会生成误导性饮食/训练建议。</p>
+              <ul className="mt-3 list-disc space-y-2 pl-5 text-slate-400">
+                <li>先同步最新体测截图，确认 <code>measurements.json</code> 有记录。</li>
+                <li>如果刚改了同步脚本，先跑一次本地校验再打开页面。</li>
+                <li>恢复数据后页面会自动回到正常故事线视图。</li>
+              </ul>
+            </div>
+          </section>
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-dark-900 text-slate-200 font-sans">
       <header className="border-b border-dark-700 px-4 py-4 sm:px-6 sm:py-4">
