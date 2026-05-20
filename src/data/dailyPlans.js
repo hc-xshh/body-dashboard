@@ -1,4 +1,4 @@
-import { analyzeBodySignals } from '../utils/rulesEngine'
+import { analyzeBodySignals } from '../utils/rulesEngine.js'
 import generatedTrainingPlans from './trainingPlans.generated.json'
 import generatedDietPlan from './dietPlan.generated.json'
 import generatedSkincarePlan from './skincarePlan.generated.json'
@@ -125,6 +125,30 @@ function isRecoveryDay(weekday) {
   return ['周三', '周日'].includes(weekday)
 }
 
+
+export function getTrainingReadingReminders(weekday, badge) {
+  if (badge === '恢复日') {
+    return [
+      '先看今天的恢复动作和时长，完成后再回头看趋势。',
+      '恢复日目标是降疲劳，不是补训练量。',
+      '今天更看重拉伸、呼吸和有氧是否完成。',
+    ]
+  }
+
+  if (badge === '有氧日') {
+    return [
+      '先看今天做哪种有氧，再确认时长和强度。',
+      '有氧日重点是完成时长，不靠额外加练刷存在感。',
+      '做完再回看趋势，避免开始前被体重波动带跑。',
+    ]
+  }
+
+  return [
+    '先确认主训练动作、组数和休息，再开始练。',
+    '力量日优先保证训练前补给和训练后蛋白。',
+    '趋势只做复盘，不要在训练前临时改动作。',
+  ]
+}
 
 export function getTrainingPlan(weekday) {
   return trainingPlans[weekday] ?? trainingPlans.周三

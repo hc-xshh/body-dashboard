@@ -13,7 +13,14 @@ import {
 import { analyzeBodySignals } from './utils/rulesEngine'
 import { getTrainingContext } from './utils/trainingContext'
 import { getMeasurementOverview, getWeightPresentation } from './utils/dashboardState'
-import { getDietPlan, getSkincarePlan, getTodayLabel, getTrainingPlan, weeklyTrainingLabel } from './data/dailyPlans'
+import {
+  getDietPlan,
+  getSkincarePlan,
+  getTodayLabel,
+  getTrainingPlan,
+  getTrainingReadingReminders,
+  weeklyTrainingLabel,
+} from './data/dailyPlans'
 import { getDecisionDisplay } from './utils/decisionPresentation'
 import {
   DEFAULT_TREND_METRIC_KEYS,
@@ -145,6 +152,14 @@ export default function App() {
     [selectedTrendMetricKeys],
   )
   const weightPresentation = getWeightPresentation(sorted)
+  const trainingReminders = getTrainingReadingReminders(todayLabel, trainingPlan.badge)
+  const readingPathSummary = bodyEngine.primaryMode === 'recovery_first'
+    ? `今天先看健康建议，再执行 ${todayTraining}；趋势只做确认，不放大恢复波动。`
+    : bodyEngine.primaryMode === 'tighten_intake'
+      ? `今天先看核心指标和饮食策略，再执行 ${todayTraining}；趋势用于复盘，不临时改计划。`
+      : bodyEngine.primaryMode === 'protect_metabolism'
+        ? `今天先看健康建议和饮食策略，再执行 ${todayTraining}；重点是保代谢，不做额外减量。`
+        : `今天先看状态，再执行 ${todayTraining}；趋势放在最后快速确认。`
   const historyDecisionMap = new Map(
     [...sorted]
       .sort((a, b) => a.date.localeCompare(b.date))
@@ -203,7 +218,7 @@ export default function App() {
           </div>
         </div>
 
-        <ReadingGuide weekday={todayLabel} trainingLabel={todayTraining} sections={storylineSections} />
+        <ReadingGuide sections={storylineSections} summary={readingPathSummary} />
 
         <section id="story-status" className="scroll-mt-24">
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">核心指标</h2>
@@ -235,11 +250,7 @@ export default function App() {
               title={`${todayLabel} 训练执行单`}
               subtitle={trainingPlan.subtitle}
               items={trainingPlan.items}
-              reminders={[
-                '先完成今天卡片里的内容，再去看趋势图，不要反过来。',
-                '恢复日也算执行日，今天的目标是促进恢复，不是硬凑训练量。',
-                '力量训练动作后面已标组间休息，尽量不要边刷手机边把休息拖太长。',
-              ]}
+              reminders={trainingReminders}
               badge={trainingPlan.badge}
               accent="rose"
               compact

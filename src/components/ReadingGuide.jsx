@@ -39,7 +39,7 @@ function getActiveSection(sections) {
   )).id
 }
 
-export default function ReadingGuide({ weekday, trainingLabel, sections = [] }) {
+export default function ReadingGuide({ sections = [], summary }) {
   const guides = useMemo(() => {
     if (sections.length) {
       return sections.map((section) => ({
@@ -93,60 +93,44 @@ export default function ReadingGuide({ weekday, trainingLabel, sections = [] }) 
   }, [guides])
 
   return (
-    <>
-      <section className="rounded-2xl border border-dark-600 bg-dark-800/90 p-4 shadow-sm shadow-black/10 sm:p-5">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-          <div className="max-w-3xl">
-            <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-400">阅读引导</h2>
-            <p className="mt-2 text-sm leading-relaxed text-slate-300">
-              先看状态，再看今天执行，最后再看趋势。今天是 {weekday}，训练主题是「{trainingLabel}」，
-              直接用下面这条固定在顶部的阅读路径跳转即可。
-            </p>
+    <nav className="sticky top-3 z-30 -mt-1 sm:top-4">
+      <div className="rounded-2xl border border-dark-600/80 bg-dark-900/88 px-2 py-2 shadow-lg shadow-black/25 backdrop-blur-md sm:px-3 sm:py-3">
+        <div className="mb-2 flex items-start justify-between gap-3 px-1 sm:px-2">
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">阅读路径</div>
+            {summary && <div className="mt-1 text-sm leading-relaxed text-slate-300">{summary}</div>}
+            <div className="mt-1 text-xs text-slate-500 sm:hidden">左右滑动或点击跳转</div>
           </div>
-          <div className="inline-flex w-fit rounded-full border border-accent/20 bg-accent/8 px-3 py-1 text-xs text-accent-light">
-            日常打开时先按顺序看一遍
-          </div>
+          <div className="hidden text-xs text-slate-500 sm:block">滚动页面时会自动联动高亮</div>
         </div>
-      </section>
 
-      <nav className="sticky top-3 z-30 -mt-1 sm:top-4">
-        <div className="rounded-2xl border border-dark-600/80 bg-dark-900/88 px-2 py-2 shadow-lg shadow-black/25 backdrop-blur-md sm:px-3 sm:py-3">
-          <div className="mb-2 flex items-center justify-between px-1 sm:px-2">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">阅读路径</div>
-              <div className="mt-1 text-xs text-slate-500 sm:hidden">左右滑动或点击跳转</div>
-            </div>
-            <div className="hidden text-xs text-slate-500 sm:block">滚动页面时会自动联动高亮</div>
-          </div>
+        <div className="storyline-scroll flex items-stretch gap-2 overflow-x-auto sm:flex-wrap sm:items-center sm:overflow-visible">
+          {guides.map((guide, index) => {
+            const isActive = activeSection === guide.id
 
-          <div className="storyline-scroll flex items-stretch gap-2 overflow-x-auto sm:flex-wrap sm:items-center sm:overflow-visible">
-            {guides.map((guide, index) => {
-              const isActive = activeSection === guide.id
-
-              return (
-                <a
-                  key={guide.id}
-                  href={guide.target}
-                  className={[
-                    'group min-w-[112px] shrink-0 rounded-xl border px-3 py-2.5 transition sm:min-w-[120px] sm:flex-1',
-                    isActive
-                      ? 'border-accent/70 bg-accent/12 text-white shadow-[0_0_0_1px_rgba(108,99,255,0.18)]'
-                      : 'border-dark-600 bg-dark-800/80 text-slate-300 hover:border-accent/35 hover:bg-dark-700/70',
-                  ].join(' ')}
-                >
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent/90">
-                    0{index + 1}
-                  </div>
-                  <div className="mt-1 text-sm font-medium">{guide.shortLabel}</div>
-                  <div className="mt-1 hidden text-xs leading-relaxed text-slate-500 group-hover:text-slate-400 sm:block">
-                    {guide.shortDescription}
-                  </div>
-                </a>
-              )
-            })}
-          </div>
+            return (
+              <a
+                key={guide.id}
+                href={guide.target}
+                className={[
+                  'group min-w-[112px] shrink-0 rounded-xl border px-3 py-2.5 transition sm:min-w-[120px] sm:flex-1',
+                  isActive
+                    ? 'border-accent/70 bg-accent/12 text-white shadow-[0_0_0_1px_rgba(108,99,255,0.18)]'
+                    : 'border-dark-600 bg-dark-800/80 text-slate-300 hover:border-accent/35 hover:bg-dark-700/70',
+                ].join(' ')}
+              >
+                <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent/90">
+                  0{index + 1}
+                </div>
+                <div className="mt-1 text-sm font-medium">{guide.shortLabel}</div>
+                <div className="mt-1 hidden text-xs leading-relaxed text-slate-500 group-hover:text-slate-400 sm:block">
+                  {guide.shortDescription}
+                </div>
+              </a>
+            )
+          })}
         </div>
-      </nav>
-    </>
+      </div>
+    </nav>
   )
 }
