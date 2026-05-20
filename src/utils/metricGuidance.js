@@ -63,6 +63,16 @@ const DEVICE_RANGES = {
     ],
     referenceText: '设备标准：0-9.9（偏高 10-14.9 / 超高 ≥15）',
   },
+  subcutaneousFat: {
+    label: '皮下脂肪',
+    unit: '%',
+    statuses: [
+      { key: 'low', statusLabel: '偏瘦', max: 8.6, tone: 'warn' },
+      { key: 'standard', statusLabel: '标准', min: 8.6, max: 20.7, tone: 'good' },
+      { key: 'high', statusLabel: '偏高', min: 20.7, tone: 'warn' },
+    ],
+    referenceText: '设备标准：8.6-20.7%（偏瘦 <8.6 / 偏高 >20.7）',
+  },
   water: {
     label: '水分',
     unit: '%',
@@ -155,7 +165,6 @@ function buildWeightInsight(latest, prev) {
   const previous = normalizeNumber(prev?.weight)
   if (current == null) return null
   const classification = classifyDeviceMetric('weight', current)
-  if (classification.statusLabel === '标准') return null
 
   const delta = previous == null ? null : current - previous
   return {
@@ -164,21 +173,27 @@ function buildWeightInsight(latest, prev) {
     statusLabel: classification.statusLabel,
     tone: classification.tone,
     rangeText: classification.referenceText,
-    summary: '体重偏高时，重点是保护关节、优先低冲击有氧，并把饮食收口做扎实。',
+    summary: classification.statusLabel === '标准'
+      ? '体重目前在设备标准范围内，继续保持当前训练和饮食节律。'
+      : '体重偏高时，重点是保护关节、优先低冲击有氧，并把饮食收口做扎实。',
     analysis: [
       delta == null ? null : `对比上次体重 ${formatSignedDelta(delta, 2, 'kg')}。`,
-      '体重偏高会增加心血管及内分泌疾病风险，也会增加心肺和膝关节负担。',
+      classification.statusLabel === '标准'
+        ? '体重维持在设备标准区间，继续看长期趋势即可。'
+        : '体重偏高会增加心血管及内分泌疾病风险，也会增加心肺和膝关节负担。',
     ].filter(Boolean).join(' '),
     movementAdvice: [
       '运动时先注意保护膝关节。',
       '优先选择运动强度较低、持续时间较长的项目，如游泳、单车、快走。',
     ],
-    dietAdvice: [
-      '适当少吃，清淡少油。',
-      '不要吃高糖、高脂肪的食物。',
-      '多吃蔬菜水果，增加膳食纤维。',
-      '减少脂肪摄入，有利于控制体重。',
-    ],
+    dietAdvice: classification.statusLabel === '标准'
+      ? ['维持清淡少油和稳定正餐即可。']
+      : [
+          '适当少吃，清淡少油。',
+          '不要吃高糖、高脂肪的食物。',
+          '多吃蔬菜水果，增加膳食纤维。',
+          '减少脂肪摄入，有利于控制体重。',
+        ],
   }
 }
 
@@ -187,7 +202,6 @@ function buildBodyFatInsight(latest, prev) {
   const previous = normalizeNumber(prev?.bodyFat)
   if (current == null) return null
   const classification = classifyDeviceMetric('bodyFat', current)
-  if (classification.statusLabel === '标准') return null
 
   const delta = previous == null ? null : current - previous
   return {
@@ -196,21 +210,27 @@ function buildBodyFatInsight(latest, prev) {
     statusLabel: classification.statusLabel,
     tone: classification.tone,
     rangeText: classification.referenceText,
-    summary: '体脂率偏高时，先降低精白淀粉主食比例和甜饮，再把蛋白补足，用稳定有氧拉开赤字。',
+    summary: classification.statusLabel === '标准'
+      ? '体脂率处于标准区间，继续保持当前节律即可。'
+      : '体脂率偏高时，先降低精白淀粉主食比例和甜饮，再把蛋白补足，用稳定有氧拉开赤字。',
     analysis: [
       delta == null ? null : `对比上次体脂率 ${formatSignedDelta(delta, 1, '%')}。`,
-      '体脂率过高容易造成内脏器官脂肪过多，并增加冠心病、高血压、脂肪肝等风险。',
+      classification.statusLabel === '标准'
+        ? '当前体脂率在设备标准区间，继续看长期趋势。'
+        : '体脂率过高容易造成内脏器官脂肪过多，并增加冠心病、高血压、脂肪肝等风险。',
     ].filter(Boolean).join(' '),
     movementAdvice: [
       '可以进行慢跑，加速脂肪氧化消耗。',
       '游泳也是不错的选择，能消耗大量能量并增加多余体脂消耗。',
     ],
-    dietAdvice: [
-      '降低精白淀粉主食比例。',
-      '增加蛋白质食物如肉类、奶类。',
-      '杜绝甜食、饮料等。',
-      '养成良好的饮食习惯。',
-    ],
+    dietAdvice: classification.statusLabel === '标准'
+      ? ['保持规律饮食和蛋白摄入即可。']
+      : [
+          '降低精白淀粉主食比例。',
+          '增加蛋白质食物如肉类、奶类。',
+          '杜绝甜食、饮料等。',
+          '养成良好的饮食习惯。',
+        ],
   }
 }
 
@@ -219,7 +239,6 @@ function buildBmiInsight(latest, prev) {
   const previous = normalizeNumber(prev?.bmi)
   if (current == null) return null
   const classification = classifyDeviceMetric('bmi', current)
-  if (classification.statusLabel === '标准') return null
 
   const delta = previous == null ? null : current - previous
   return {
@@ -228,19 +247,25 @@ function buildBmiInsight(latest, prev) {
     statusLabel: classification.statusLabel,
     tone: classification.tone,
     rangeText: classification.referenceText,
-    summary: 'BMI偏胖时，把重点放在稳定有氧、控制总热量和避免暴饮暴食。',
+    summary: classification.statusLabel === '标准'
+      ? 'BMI处于标准区间，继续稳定执行即可。'
+      : 'BMI偏胖时，把重点放在稳定有氧、控制总热量和避免暴饮暴食。',
     analysis: [
       delta == null ? null : `对比上次 BMI ${formatSignedDelta(delta, 1)}。`,
-      '身体偏胖与高血压、血脂升高、尿酸增高等并发症相关，也会增加腰膝等大关节磨损。',
+      classification.statusLabel === '标准'
+        ? 'BMI当前处于设备标准区间，继续保持。'
+        : '身体偏胖与高血压、血脂升高、尿酸增高等并发症相关，也会增加腰膝等大关节磨损。',
     ].filter(Boolean).join(' '),
     movementAdvice: [
       '可以做有氧运动，如慢跑、游泳、健身操等。',
       '每日运动 30 分钟以上，持之以恒。',
     ],
-    dietAdvice: [
-      '养成健康的饮食习惯，定时定量，避免暴饮暴食。',
-      '尽量食用低热量、低脂肪的食物和水果。',
-    ],
+    dietAdvice: classification.statusLabel === '标准'
+      ? ['继续定时定量、避免暴饮暴食即可。']
+      : [
+          '养成健康的饮食习惯，定时定量，避免暴饮暴食。',
+          '尽量食用低热量、低脂肪的食物和水果。',
+        ],
   }
 }
 
@@ -249,7 +274,6 @@ function buildBmrInsight(latest, prev) {
   const previous = normalizeNumber(prev?.bmr)
   if (current == null) return null
   const classification = classifyDeviceMetric('bmr', current)
-  if (classification.statusLabel !== '偏低') return null
 
   const delta = previous == null ? null : current - previous
   return {
@@ -258,22 +282,28 @@ function buildBmrInsight(latest, prev) {
     statusLabel: classification.statusLabel,
     tone: classification.tone,
     rangeText: classification.referenceText,
-    summary: '基础代谢偏低时，不要继续硬压热量，要补水、做够有氧，再接一点耐力训练。',
+    summary: classification.statusLabel === '达标'
+      ? '基础代谢达到设备达标线，继续保持作息、补水和训练节律。'
+      : '基础代谢偏低时，不要继续硬压热量，要补水、做够有氧，再接一点耐力训练。',
     analysis: [
       delta == null ? null : `对比上次基础代谢 ${formatSignedDelta(delta, 1)}。`,
-      '基础代谢偏低可能与睡眠不足、运动量不足或饮水不足有关，也会增加肥胖、消化功能下降和高脂血症风险。',
+      classification.statusLabel === '达标'
+        ? '基础代谢已达到设备达标线。'
+        : '基础代谢偏低可能与睡眠不足、运动量不足或饮水不足有关，也会增加肥胖、消化功能下降和高脂血症风险。',
     ].filter(Boolean).join(' '),
     movementAdvice: [
       '每天坚持有氧运动。',
       '每次建议运动45分钟以上，可采用慢跑、游泳等方式。',
       '运动后结合耐力训练，有助于提高静息基础代谢率。',
     ],
-    dietAdvice: [
-      '不要过度节食。',
-      '多喝水。',
-      '多吃蔬菜和水果。',
-      '少量多餐，保持低盐低脂。',
-    ],
+    dietAdvice: classification.statusLabel === '达标'
+      ? ['保持正常进食和补水，不要极端减餐。']
+      : [
+          '不要过度节食。',
+          '多喝水。',
+          '多吃蔬菜和水果。',
+          '少量多餐，保持低盐低脂。',
+        ],
   }
 }
 
@@ -283,8 +313,6 @@ function buildMuscleInsight(latest, prev) {
   if (current == null) return null
   const classification = classifyDeviceMetric('muscle', current)
   const delta = previous == null ? null : current - previous
-  const shouldShow = classification.statusLabel !== '优秀' && (classification.statusLabel !== '标准' || (delta != null && delta < 0))
-  if (!shouldShow) return null
 
   return {
     key: 'muscle',
@@ -293,13 +321,17 @@ function buildMuscleInsight(latest, prev) {
     tone: classification.tone,
     rangeText: classification.referenceText,
     summary: classification.statusLabel === '标准'
-      ? '肌肉量仍在标准范围，但最近在掉，当前重点是维持负重训练和蛋白摄入。'
-      : '肌肉量不足时，优先把负重训练和基础蛋白补回来。',
+      ? '肌肉量处于标准范围，继续维持负重训练和蛋白摄入。'
+      : classification.statusLabel === '优秀'
+        ? '肌肉量处于优秀区间，当前重点是稳定训练与恢复，避免无谓流失。'
+        : '肌肉量不足时，优先把负重训练和基础蛋白补回来。',
     analysis: [
       delta == null ? null : `对比上次肌肉 ${formatSignedDelta(delta, 1, 'kg')}。`,
       classification.statusLabel === '标准'
         ? '肌肉量达到标准，肌肉量越稳，越有利于通过体力活动消耗更多热量。'
-        : '肌肉量不足时，活动能力和热量消耗能力都会受影响。',
+        : classification.statusLabel === '优秀'
+          ? '肌肉量处于优秀区间，继续保持力量训练即可。'
+          : '肌肉量不足时，活动能力和热量消耗能力都会受影响。',
     ].filter(Boolean).join(' '),
     movementAdvice: [
       '坚持负重训练，进行深蹲、卧推、推举等多肌群动作。',
@@ -315,7 +347,6 @@ function buildVisceralFatInsight(latest, prev) {
   const previous = normalizeNumber(prev?.visceralFat)
   if (current == null) return null
   const classification = classifyDeviceMetric('visceralFat', current)
-  if (classification.statusLabel === '标准') return null
 
   const delta = previous == null ? null : current - previous
   return {
@@ -324,20 +355,135 @@ function buildVisceralFatInsight(latest, prev) {
     statusLabel: classification.statusLabel,
     tone: classification.tone,
     rangeText: classification.referenceText,
-    summary: '内脏脂肪偏高时，有氧是主线，同时把油炸、烧烤、腌制和高油脂食物压下去。',
+    summary: classification.statusLabel === '标准'
+      ? '内脏脂肪当前在标准区间，继续守住有氧频率和晚间收口。'
+      : '内脏脂肪偏高时，有氧是主线，同时把油炸、烧烤、腌制和高油脂食物压下去。',
     analysis: [
       delta == null ? null : `对比上次内脏脂肪 ${formatSignedDelta(delta, 0)}。`,
-      '内脏脂肪过多会增加腹型肥胖、脂肪肝、糖尿病和高血压等风险。',
+      classification.statusLabel === '标准'
+        ? '内脏脂肪维持在标准区间，继续保持当前训练与饮食节律即可。'
+        : '内脏脂肪过多会增加腹型肥胖、脂肪肝、糖尿病和高血压等风险。',
     ].filter(Boolean).join(' '),
     movementAdvice: [
       '以有氧运动为主，适当进行跑步、游泳、爬山。',
       '也可选择慢走、太极等强度更低的运动。',
     ],
-    dietAdvice: [
-      '饮食上不能吃油脂过高的食物。',
-      '烧烤、油炸、腌制品要控制。',
-      '同时多喝水，促进代谢排出。',
-    ],
+    dietAdvice: classification.statusLabel === '标准'
+      ? ['保持当前饮食节律，避免晚间额外高油脂摄入。']
+      : [
+          '饮食上不能吃油脂过高的食物。',
+          '烧烤、油炸、腌制品要控制。',
+          '同时多喝水，促进代谢排出。',
+        ],
+  }
+}
+
+function buildSubcutaneousFatInsight(latest, prev) {
+  const current = normalizeNumber(latest.subcutaneousFat)
+  const previous = normalizeNumber(prev?.subcutaneousFat)
+  if (current == null) return null
+  const classification = classifyDeviceMetric('subcutaneousFat', current)
+  const delta = previous == null ? null : current - previous
+
+  return {
+    key: 'subcutaneousFat',
+    label: '皮下脂肪',
+    statusLabel: classification.statusLabel,
+    tone: classification.tone,
+    rangeText: classification.referenceText,
+    summary: classification.statusLabel === '标准'
+      ? '皮下脂肪处于理想范围，继续保持清淡、低脂的饮食节律即可。'
+      : '皮下脂肪偏高时，重点仍是稳定控脂，不用追求极端减重。',
+    analysis: [
+      delta == null ? null : `对比上次皮下脂肪 ${formatSignedDelta(delta, 1, '%')}。`,
+      classification.statusLabel === '标准'
+        ? '继续保持皮下脂肪率在理想范围。'
+        : '皮下脂肪厚度可用于辅助判断胖瘦和全身脂肪比例。',
+    ].filter(Boolean).join(' '),
+    movementAdvice: classification.statusLabel === '标准'
+      ? ['保持当前训练节奏即可，不必因为皮下脂肪单次波动临时加码。']
+      : ['优先保持规律有氧与基础力量训练，稳定降低脂肪比例。'],
+    dietAdvice: classification.statusLabel === '标准'
+      ? ['饮食以清淡、低脂肪的食物为主，继续保持。']
+      : ['饮食继续少油少糖，避免高脂高热量零食。'],
+  }
+}
+
+function buildProteinInsight(latest, prev) {
+  const current = normalizeNumber(latest.protein)
+  const previous = normalizeNumber(prev?.protein)
+  if (current == null) return null
+  const classification = classifyDeviceMetric('protein', current)
+  const delta = previous == null ? null : current - previous
+
+  return {
+    key: 'protein',
+    label: '蛋白质',
+    statusLabel: classification.statusLabel,
+    tone: classification.tone,
+    rangeText: classification.referenceText,
+    summary: classification.statusLabel === '标准'
+      ? '蛋白质水平达标，继续保持科学饮食，不过分节食。'
+      : '蛋白质不达标时，先把规律进食和优质蛋白补回来。',
+    analysis: [
+      delta == null ? null : `对比上次蛋白质 ${formatSignedDelta(delta, 1, '%')}。`,
+      classification.statusLabel === '标准'
+        ? '你的蛋白质水平达标。'
+        : '体脂秤测得的蛋白质率是根据身体成分推算的参考值。',
+    ].filter(Boolean).join(' '),
+    movementAdvice: ['维持当前训练与恢复节律，避免因过度训练拖累恢复。'],
+    dietAdvice: classification.statusLabel === '标准'
+      ? ['坚持科学饮食，不过分节食有助于维持稳定蛋白质水平。']
+      : ['增加奶类、蛋类、肉类等优质蛋白来源，避免长期吃得太少。'],
+  }
+}
+
+function buildSkeletalMuscleRateInsight(latest, prev) {
+  const current = normalizeNumber(latest.skeletalMuscleRate)
+  const previous = normalizeNumber(prev?.skeletalMuscleRate)
+  if (current == null) return null
+  const classification = classifyDeviceMetric('skeletalMuscleRate', current)
+  const delta = previous == null ? null : current - previous
+
+  return {
+    key: 'skeletalMuscleRate',
+    label: '骨骼肌率',
+    statusLabel: classification.statusLabel,
+    tone: classification.tone,
+    rangeText: classification.referenceText,
+    summary: classification.statusLabel === '标准'
+      ? '骨骼肌率处于标准区间，继续保持力量训练和恢复节律。'
+      : '骨骼肌率偏离标准时，重点是把力量训练和蛋白摄入重新拉稳。',
+    analysis: [
+      delta == null ? null : `对比上次骨骼肌率 ${formatSignedDelta(delta, 1, '%')}。`,
+      '骨骼肌率即骨骼肌重量占体重的百分比。',
+      classification.statusLabel === '标准' ? '当前指标正常，合理饮食，继续坚持。' : null,
+    ].filter(Boolean).join(' '),
+    movementAdvice: ['保持规律力量训练，优先多肌群动作和稳定训练量。'],
+    dietAdvice: ['保持规律进食与蛋白摄入，避免过度节食。'],
+  }
+}
+
+function buildLeanBodyMassInsight(latest, prev) {
+  const current = normalizeNumber(latest.leanBodyMass)
+  const previous = normalizeNumber(prev?.leanBodyMass)
+  if (current == null) return null
+  const delta = previous == null ? null : current - previous
+
+  return {
+    key: 'leanBodyMass',
+    label: '去脂体重',
+    statusLabel: '未见状态标签',
+    tone: 'na',
+    rangeText: null,
+    summary: '去脂体重是结果型指标，主要用于观察瘦体重是否稳住，不单独做红黄绿判断。',
+    analysis: [
+      delta == null ? null : `对比上次去脂体重 ${formatSignedDelta(delta, 1, 'kg')}。`,
+      '去脂体重又称瘦体重，是指除脂肪以外身体其他成分的重量，肌肉是其中的主要部分。',
+      '去脂体重高通常说明身体更强壮、瘦体重占比更好。',
+    ].filter(Boolean).join(' '),
+    movementAdvice: ['优先维持力量训练和恢复，不要因短期体重波动随意削减训练。'],
+    dietAdvice: ['保证蛋白摄入和正常正餐，避免激进减餐导致瘦体重下滑。'],
   }
 }
 
@@ -346,7 +492,6 @@ function buildWaterInsight(latest, prev) {
   const previous = normalizeNumber(prev?.water)
   if (current == null) return null
   const classification = classifyDeviceMetric('water', current)
-  if (classification.statusLabel === '标准') return null
 
   const delta = previous == null ? null : current - previous
   return {
@@ -355,20 +500,26 @@ function buildWaterInsight(latest, prev) {
     statusLabel: classification.statusLabel,
     tone: classification.tone,
     rangeText: classification.referenceText,
-    summary: '水分偏低时，今天的重点不是多想，而是把分次补水和低盐饮食执行到位。',
+    summary: classification.statusLabel === '标准'
+      ? '水分处于标准区间，继续维持补水节律即可。'
+      : '水分偏低时，今天的重点不是多想，而是把分次补水和低盐饮食执行到位。',
     analysis: [
       delta == null ? null : `对比上次水分 ${formatSignedDelta(delta, 1, '%')}。`,
-      '水分偏低会影响血液循环和身体代谢，需要及时补充体液。',
+      classification.statusLabel === '标准'
+        ? '当前水分在设备标准区间。'
+        : '水分偏低会影响血液循环和身体代谢，需要及时补充体液。',
     ].filter(Boolean).join(' '),
     movementAdvice: [
       '坚持有氧锻炼，如慢跑、健身舞等。',
       '配合补水和代谢调整，提高体内水分含量。',
     ],
-    dietAdvice: [
-      '增加饮水量。',
-      '同时饮食少吃盐。',
-      '多吃蔬菜水果，减少辛辣刺激和高油脂食物。',
-    ],
+    dietAdvice: classification.statusLabel === '标准'
+      ? ['保持规律补水，避免吃得太咸。']
+      : [
+          '增加饮水量。',
+          '同时饮食少吃盐。',
+          '多吃蔬菜水果，减少辛辣刺激和高油脂食物。',
+        ],
   }
 }
 
@@ -377,7 +528,6 @@ function buildBoneInsight(latest, prev) {
   const previous = normalizeNumber(prev?.bone)
   if (current == null) return null
   const classification = classifyDeviceMetric('bone', current)
-  if (classification.statusLabel === '标准') return null
 
   const delta = previous == null ? null : current - previous
   return {
@@ -386,10 +536,14 @@ function buildBoneInsight(latest, prev) {
     statusLabel: classification.statusLabel,
     tone: classification.tone,
     rangeText: classification.referenceText,
-    summary: '骨量不足时，今天更重要的是稳住低冲击有氧和补钙饮食，不做冒进动作。',
+    summary: classification.statusLabel === '标准'
+      ? '骨量达到设备标准线，继续保持负重训练和补钙饮食。'
+      : '骨量不足时，今天更重要的是稳住低冲击有氧和补钙饮食，不做冒进动作。',
     analysis: [
       delta == null ? null : `对比上次骨量 ${formatSignedDelta(delta, 1, 'kg')}。`,
-      '骨量偏低可能伴随骨质疏松、关节疼痛、乏力和剧烈运动时力量下降。',
+      classification.statusLabel === '标准'
+        ? '骨量已达到设备标准线。'
+        : '骨量偏低可能伴随骨质疏松、关节疼痛、乏力和剧烈运动时力量下降。',
     ].filter(Boolean).join(' '),
     movementAdvice: [
       '可选择慢跑、散步、步行等有氧运动，缓慢锻炼。',
@@ -401,14 +555,18 @@ function buildBoneInsight(latest, prev) {
 }
 
 const INSIGHT_PRIORITY = {
-  bodyFat: 100,
-  bmr: 90,
-  visceralFat: 80,
-  bone: 70,
-  water: 60,
-  weight: 50,
-  bmi: 40,
-  muscle: 30,
+  bodyFat: 120,
+  bmr: 110,
+  visceralFat: 100,
+  weight: 90,
+  bmi: 80,
+  muscle: 70,
+  subcutaneousFat: 60,
+  protein: 50,
+  skeletalMuscleRate: 40,
+  leanBodyMass: 35,
+  water: 30,
+  bone: 20,
 }
 
 function getInsightPriority(insight) {
@@ -440,6 +598,10 @@ export function getMetricInsights(latest = {}, prev = null) {
     buildBmrInsight(latest, prev),
     buildMuscleInsight(latest, prev),
     buildVisceralFatInsight(latest, prev),
+    buildSubcutaneousFatInsight(latest, prev),
+    buildProteinInsight(latest, prev),
+    buildSkeletalMuscleRateInsight(latest, prev),
+    buildLeanBodyMassInsight(latest, prev),
     buildWaterInsight(latest, prev),
     buildBoneInsight(latest, prev),
   ].filter(Boolean)

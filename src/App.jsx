@@ -61,10 +61,10 @@ const metricReferenceMap = {
   bmr: getMetricReferenceText('bmr'),
   muscle: getMetricReferenceText('muscle'),
   visceralFat: getMetricReferenceText('visceralFat'),
-  subcutaneousFat: '设备截图待补充精确分级；先展示当前值，暂不做红黄绿误导判断',
+  subcutaneousFat: getMetricReferenceText('subcutaneousFat'),
   protein: getMetricReferenceText('protein') ?? '设备标准待补充',
   skeletalMuscleRate: getMetricReferenceText('skeletalMuscleRate') ?? '设备标准待补充',
-  leanBodyMass: '去脂体重为结果型指标，当前先展示趋势观察，不做状态分级',
+  leanBodyMass: '去脂体重为结果型指标，主要看趋势与瘦体重是否稳住',
   water: getMetricReferenceText('water'),
   bone: getMetricReferenceText('bone'),
   score: '≥80',
@@ -165,6 +165,7 @@ export default function App() {
   ]
   const advice = generateAdvice(latest, prev, sorted, todayLabel)
   const metricInsights = getMetricInsights(latest, prev)
+  const subcutaneousFatClassification = classifyDeviceMetric('subcutaneousFat', latest.subcutaneousFat)
   const proteinClassification = classifyDeviceMetric('protein', latest.protein)
   const skeletalMuscleRateClassification = classifyDeviceMetric('skeletalMuscleRate', latest.skeletalMuscleRate)
   const dietPlan = getDietPlan(latest, todayLabel, todayTraining, sorted)
@@ -265,7 +266,7 @@ export default function App() {
             <MetricCard label="基础代谢" value={latest.bmr} unit="kcal" status={getBMRStatus(latest.bmr)} sub={latest.bmr < 1566 ? '偏低' : '达标'} reference={metricReferenceMap.bmr} />
             <MetricCard label="肌肉" value={latest.muscle} unit="kg" status={getMuscleStatus(latest.muscle)} sub={latest.muscle > 52.4 ? '优秀' : latest.muscle < 44 ? '不足' : '标准'} reference={metricReferenceMap.muscle} />
             <MetricCard label="内脏脂肪" value={latest.visceralFat} status={getVisceralFatStatus(latest.visceralFat)} sub={latest.visceralFat >= 15 ? '超高' : latest.visceralFat >= 10 ? '偏高' : '标准'} reference={metricReferenceMap.visceralFat} />
-            <MetricCard label="皮下脂肪" value={latest.subcutaneousFat} unit="%" status={STATUS.NA} sub="仅展示当前值" reference={metricReferenceMap.subcutaneousFat} />
+            <MetricCard label="皮下脂肪" value={latest.subcutaneousFat} unit="%" status={subcutaneousFatClassification.tone === 'bad' ? STATUS.BAD : subcutaneousFatClassification.tone === 'warn' ? STATUS.WARN : STATUS.GOOD} sub={subcutaneousFatClassification.statusLabel} reference={metricReferenceMap.subcutaneousFat} />
             <MetricCard label="蛋白质" value={latest.protein} unit="%" status={proteinClassification.tone === 'bad' ? STATUS.BAD : proteinClassification.tone === 'warn' ? STATUS.WARN : STATUS.GOOD} sub={proteinClassification.statusLabel} reference={metricReferenceMap.protein} />
             <MetricCard label="骨骼肌率" value={latest.skeletalMuscleRate} unit="%" status={skeletalMuscleRateClassification.tone === 'bad' ? STATUS.BAD : skeletalMuscleRateClassification.tone === 'warn' ? STATUS.WARN : STATUS.GOOD} sub={skeletalMuscleRateClassification.statusLabel} reference={metricReferenceMap.skeletalMuscleRate} />
             <MetricCard label="去脂体重" value={latest.leanBodyMass} unit="kg" status={STATUS.NA} sub="趋势观察" reference={metricReferenceMap.leanBodyMass} />
