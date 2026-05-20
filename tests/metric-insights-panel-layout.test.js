@@ -14,3 +14,11 @@ test('metric insights panel lives under the core metrics section and keeps a com
   assert.match(appSource, /import MetricInsightsPanel/)
   assert.match(appSource, /<MetricInsightsPanel metricInsights=\{metricInsights\} \/>/)
 })
+
+test('core metrics section includes all 12 body metrics plus the score card', () => {
+  const labels = ['体重', '体脂率', 'BMI', '基础代谢', '肌肉', '内脏脂肪', '皮下脂肪', '蛋白质', '骨骼肌率', '去脂体重', '水分', '骨量', '综合得分']
+
+  labels.forEach((label) => {
+    assert.match(appSource, new RegExp(`label=\\"${label}\\"`))
+  })
+})
