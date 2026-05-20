@@ -14,6 +14,14 @@ export function sanitizeSelectedTrendMetrics(selectedKeys = [], metrics = []) {
   return [...new Set(selectedKeys)].filter(key => available.has(key))
 }
 
+export function getTrendChartRenderProps() {
+  return {
+    notMerge: true,
+    replaceMerge: ['series'],
+    lazyUpdate: false,
+  }
+}
+
 export function getTrendChartLayout(viewportWidth = 1280) {
   const isMobile = viewportWidth < 640
 

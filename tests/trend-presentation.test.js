@@ -5,6 +5,7 @@ import {
   DEFAULT_TREND_METRIC_KEYS,
   getMetricSelectorItems,
   getTrendChartLayout,
+  getTrendChartRenderProps,
   sanitizeSelectedTrendMetrics,
 } from '../src/utils/trendPresentation.js'
 
@@ -51,6 +52,14 @@ test('selector items expose selected state for multi-select chips', () => {
     { key: 'bodyFat', label: '体脂率(%)', selected: false },
     { key: 'muscle', label: '肌肉量(kg)', selected: true },
   ])
+})
+
+test('returns replace-merge render props so deselected series are removed from echarts', () => {
+  assert.deepEqual(getTrendChartRenderProps(), {
+    notMerge: true,
+    replaceMerge: ['series'],
+    lazyUpdate: false,
+  })
 })
 
 test('returns denser chart layout for narrow screens', () => {

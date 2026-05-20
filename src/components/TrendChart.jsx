@@ -3,7 +3,7 @@ import { getTrendData } from '../utils/healthAnalysis'
 import { analyzeBodySignals } from '../utils/rulesEngine'
 import { getTrainingContext } from '../utils/trainingContext'
 import { getDecisionDisplay } from '../utils/decisionPresentation'
-import { getTrendChartLayout } from '../utils/trendPresentation'
+import { getTrendChartLayout, getTrendChartRenderProps } from '../utils/trendPresentation'
 
 
 function buildDecisionTimeline(data = []) {
@@ -231,7 +231,12 @@ export default function TrendChart({ data, metrics }) {
         </div>
       )}
 
-      <ReactECharts option={option} style={{ height: `${layout.height}px` }} opts={{ renderer: 'svg' }} />
+      <ReactECharts
+        option={option}
+        style={{ height: `${layout.height}px` }}
+        opts={{ renderer: 'svg' }}
+        {...getTrendChartRenderProps()}
+      />
     </div>
   )
 }
