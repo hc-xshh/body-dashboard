@@ -272,10 +272,7 @@ export default function App() {
             <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">今日训练内容</h2>
             <DailyPlanPanel
               title={`${todayLabel} 训练执行单`}
-              subtitle={trainingPanel.subtitle}
               summary={trainingPanel.summary}
-              metaLine={trainingPanel.metaLine}
-              highlights={trainingPanel.highlights}
               items={trainingPlan.items}
               reminders={trainingReminders}
               badge={trainingPlan.badge}
@@ -289,10 +286,7 @@ export default function App() {
             <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">今日护肤流程</h2>
             <DailyPlanPanel
               title={`${todayLabel} 护肤流程`}
-              subtitle={skincarePanel.subtitle}
               summary={skincarePanel.summary}
-              metaLine={skincarePanel.metaLine}
-              highlights={skincarePanel.highlights}
               items={skincareItems}
               reminders={skincarePlan.reminders}
               badge={skincarePlan.evening.theme}
@@ -309,10 +303,7 @@ export default function App() {
             <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">今日推荐饮食</h2>
             <DailyPlanPanel
               title={`${todayLabel} 饮食执行单`}
-              subtitle={dietPlan.subtitle}
               summary={dietPlan.summary}
-              metaLine={dietPlan.metaLine}
-              highlights={dietPlan.highlights}
               items={dietPlan.items}
               reminders={dietPlan.reminders}
               badge={dietPlan.badge}

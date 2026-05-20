@@ -6,7 +6,11 @@ const appSource = readFileSync(new URL('../src/App.jsx', import.meta.url), 'utf8
 const panelSource = readFileSync(new URL('../src/components/DailyPlanPanel.jsx', import.meta.url), 'utf8')
 const dailyPlansSource = readFileSync(new URL('../src/data/dailyPlans.js', import.meta.url), 'utf8')
 
-test('diet section uses timeline layout and a simpler reminder heading', () => {
+test('diet section uses timeline layout with a single summary bubble and simpler reminder heading', () => {
+  assert.match(appSource, /summary=\{dietPlan\.summary\}/)
+  assert.doesNotMatch(appSource, /subtitle=\{dietPlan\.subtitle\}/)
+  assert.doesNotMatch(appSource, /metaLine=\{dietPlan\.metaLine\}/)
+  assert.doesNotMatch(appSource, /highlights=\{dietPlan\.highlights\}/)
   assert.match(appSource, /variant="timeline"/)
   assert.match(appSource, /reminderTitle="执行提醒"/)
   assert.match(panelSource, /variant === 'timeline'/)
