@@ -74,3 +74,15 @@ export function getDecisionDisplay(decision = {}) {
     highlights,
   }
 }
+
+export function getTrendSummaryText(decision = {}) {
+  const stageLabel = normalizeText(decision.stageLabel)
+  const trainingLoadLabel = normalizeText(decision.trainingLoadLabel)
+  const intakeLabel = getIntakeStrategyLabel(decision.intakeStrategy)
+
+  if (!stageLabel || !trainingLoadLabel || intakeLabel === '—') {
+    return '最近一次体测暂无完整判断，先结合核心指标和趋势图一起看。'
+  }
+
+  return `最近一次体测判断为${stageLabel}，今天按${trainingLoadLabel}安排，饮食以${intakeLabel}为主。`
+}

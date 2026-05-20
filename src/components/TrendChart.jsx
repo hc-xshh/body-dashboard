@@ -2,7 +2,7 @@ import ReactECharts from 'echarts-for-react'
 import { getTrendData } from '../utils/healthAnalysis'
 import { analyzeBodySignals } from '../utils/rulesEngine'
 import { getTrainingContext } from '../utils/trainingContext'
-import { getDecisionDisplay } from '../utils/decisionPresentation'
+import { getDecisionDisplay, getTrendSummaryText } from '../utils/decisionPresentation'
 import { getTrendChartLayout, getTrendChartRenderProps } from '../utils/trendPresentation'
 
 
@@ -202,19 +202,11 @@ export default function TrendChart({ data, metrics, rangeLabel = '近7天' }) {
   return (
     <div>
       {latestDecision && (
-        <div className="mb-4 flex flex-col gap-3">
-          <div className="flex flex-wrap gap-2">
-            <span className="inline-flex rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent-light">
-              最近一次体测阶段：{latestDecision.stageLabel}
-            </span>
-            <span className="inline-flex rounded-full border border-dark-600 bg-dark-900/70 px-2.5 py-1 text-xs text-slate-300">
-              负荷：{latestDecision.trainingLoadLabel}
-            </span>
-            <span className="inline-flex rounded-full border border-dark-600 bg-dark-900/70 px-2.5 py-1 text-xs text-slate-300">
-              饮食策略：{latestDecisionDisplay?.intakeLabel ?? '—'}
-            </span>
-          </div>
-          <p className="text-sm leading-relaxed text-slate-300">
+        <div className="mb-4 border-b border-dark-700 pb-4">
+          <p className="text-sm leading-relaxed text-slate-200">
+            {getTrendSummaryText(latestDecision)}
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-slate-400">
             {latestDecisionDisplay?.compactSummary ?? latestDecision.summary}
           </p>
         </div>
