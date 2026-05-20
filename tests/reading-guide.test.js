@@ -12,11 +12,13 @@ test('app removes standalone reading-guide heading and lets the path card carry 
   assert.match(appSource, /summary=\{readingPathSummary\}/)
 })
 
-test('reading-path summary copy is decision-first rather than section-order instructions', () => {
-  assert.match(appSource, /今天重点不是减量，而是恢复执行。/)
-  assert.match(appSource, /今天先盯饮食策略，训练照计划做。/)
-  assert.match(appSource, /今天重点是稳住正餐和恢复，不做额外减量。/)
-  assert.match(appSource, /今天状态以稳定执行为主，按计划完成就够。/)
-  assert.doesNotMatch(appSource, /今天先看健康建议，再执行/)
-  assert.doesNotMatch(appSource, /今天先看核心指标和饮食策略，再执行/)
+test('reading-path summary copy is decision-first and uses plain language', () => {
+  assert.match(appSource, /今天按恢复计划做，不用因为体重波动临时减量。/)
+  assert.match(appSource, /今天先管住吃的，训练按计划做。/)
+  assert.match(appSource, /今天重点是好好吃饭和恢复，不要再额外减量。/)
+  assert.match(appSource, /今天按计划完成就行，不用额外加码。/)
+  assert.doesNotMatch(appSource, /今天重点不是减量，而是恢复执行。/)
+  assert.doesNotMatch(appSource, /今天先盯饮食策略，训练照计划做。/)
+  assert.doesNotMatch(appSource, /今天重点是稳住正餐和恢复，不做额外减量。/)
+  assert.doesNotMatch(appSource, /今天状态以稳定执行为主，按计划完成就够。/)
 })

@@ -154,12 +154,12 @@ export default function App() {
   const weightPresentation = getWeightPresentation(sorted)
   const trainingReminders = getTrainingReadingReminders(todayLabel, trainingPlan.badge)
   const readingPathSummary = bodyEngine.primaryMode === 'recovery_first'
-    ? '今天重点不是减量，而是恢复执行。'
+    ? '今天按恢复计划做，不用因为体重波动临时减量。'
     : bodyEngine.primaryMode === 'tighten_intake'
-      ? '今天先盯饮食策略，训练照计划做。'
+      ? '今天先管住吃的，训练按计划做。'
       : bodyEngine.primaryMode === 'protect_metabolism'
-        ? '今天重点是稳住正餐和恢复，不做额外减量。'
-        : '今天状态以稳定执行为主，按计划完成就够。'
+        ? '今天重点是好好吃饭和恢复，不要再额外减量。'
+        : '今天按计划完成就行，不用额外加码。'
   const historyDecisionMap = new Map(
     [...sorted]
       .sort((a, b) => a.date.localeCompare(b.date))
