@@ -151,6 +151,53 @@ export function getTrainingReadingReminders(weekday, badge) {
   ]
 }
 
+function formatFlowPreview(steps = [], limit = 3) {
+  const preview = steps.slice(0, limit).join(' → ')
+  return steps.length > limit ? `${preview} → …` : preview
+}
+
+export function getTrainingPanelPresentation(trainingPlan) {
+  const primaryItem = trainingPlan.items.find(item => ['主训练', '有氧运动'].includes(item.title)) ?? trainingPlan.items[0]
+  const coreItem = trainingPlan.items.find(item => item.title.includes('腹')) ?? trainingPlan.items[1] ?? null
+  const finishItem = trainingPlan.items[trainingPlan.items.length - 1] ?? null
+
+  const summary = trainingPlan.badge === '恢复日'
+    ? '今天以恢复、拉伸和低强度有氧为主，完成时长就够，不补训练量。'
+    : trainingPlan.badge === '有氧日'
+      ? `今天先把${primaryItem?.title ?? '有氧'}做够，再补轻量恢复，重点是稳定完成。`
+      : `今天先完成${primaryItem?.title ?? '主训练'}，再收尾${coreItem?.title ?? '拉伸'}，训练前后补给别省。`
+
+  return {
+    subtitle: '先看顺序和时长，照着做就行。',
+    summary,
+    metaLine: `${trainingPlan.badge} · ${trainingPlan.title} · ${trainingPlan.subtitle}`,
+    highlights: [
+      primaryItem ? `主段：${primaryItem.title} ${primaryItem.time}` : null,
+      coreItem ? `补充：${coreItem.title} ${coreItem.time}` : null,
+      finishItem ? `收尾：${finishItem.title} ${finishItem.time}` : null,
+    ].filter(Boolean),
+  }
+}
+
+export function getSkincarePanelPresentation(skincarePlan) {
+  const eveningTheme = skincarePlan.evening.theme
+  const eveningDuration = skincarePlan.evening.duration
+  const eveningFocus = skincarePlan.evening.emphasis ?? skincarePlan.evening.note
+
+  return {
+    subtitle: '按早晚顺序做，今天重点看夜间主题。',
+    summary: eveningFocus
+      ? `白天按固定控油 + 防晒走，${eveningFocus}`
+      : `白天按固定控油 + 防晒走，夜间按${eveningTheme}做，不临时加项目。`,
+    metaLine: `晨间固定护理 · 夜间 ${eveningTheme} · ${eveningDuration}`,
+    highlights: [
+      skincarePlan.morning.length ? `晨间：${skincarePlan.morning.length} 步，${formatFlowPreview(skincarePlan.morning, 4)}` : null,
+      skincarePlan.evening.steps?.length ? `夜间：${skincarePlan.evening.steps.length} 步，${formatFlowPreview(skincarePlan.evening.steps, 4)}` : null,
+      skincarePlan.evening.note ? `提醒：${skincarePlan.evening.note}` : null,
+    ].filter(Boolean).slice(0, 3),
+  }
+}
+
 export function getTrainingPlan(weekday) {
   return trainingPlans[weekday] ?? trainingPlans.周三
 }

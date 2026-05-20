@@ -22,8 +22,10 @@ import {
 } from './utils/dashboardState'
 import {
   getDietPlan,
+  getSkincarePanelPresentation,
   getSkincarePlan,
   getTodayLabel,
+  getTrainingPanelPresentation,
   getTrainingPlan,
   getTrainingReadingReminders,
   weeklyTrainingLabel,
@@ -128,6 +130,7 @@ export default function App() {
   const [historyPageSize, setHistoryPageSize] = useState(HISTORY_PAGE_SIZE_OPTIONS[0])
   const [historyPage, setHistoryPage] = useState(1)
   const trainingPlan = getTrainingPlan(todayLabel)
+  const trainingPanel = getTrainingPanelPresentation(trainingPlan)
   const skincareItems = [
     {
       title: '晨间流程',
@@ -147,6 +150,7 @@ export default function App() {
   ]
   const advice = generateAdvice(latest, prev, sorted, todayLabel)
   const dietPlan = getDietPlan(latest, todayLabel, todayTraining, sorted)
+  const skincarePanel = getSkincarePanelPresentation(skincarePlan)
   const todayTrainingContext = getTrainingContext(todayLabel)
   const bodyEngine = analyzeBodySignals(latest, sorted, todayTrainingContext).decision
   const selectedTrendMetrics = useMemo(
@@ -268,24 +272,34 @@ export default function App() {
             <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">今日训练内容</h2>
             <DailyPlanPanel
               title={`${todayLabel} 训练执行单`}
-              subtitle={trainingPlan.subtitle}
+              subtitle={trainingPanel.subtitle}
+              summary={trainingPanel.summary}
+              metaLine={trainingPanel.metaLine}
+              highlights={trainingPanel.highlights}
               items={trainingPlan.items}
               reminders={trainingReminders}
               badge={trainingPlan.badge}
               accent="rose"
               compact
+              variant="timeline"
+              reminderTitle="执行提醒"
             />
           </div>
           <div className="flex flex-col">
             <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">今日护肤流程</h2>
             <DailyPlanPanel
               title={`${todayLabel} 护肤流程`}
-              subtitle="按周计划自动切到当天版本，直接照着做即可。"
+              subtitle={skincarePanel.subtitle}
+              summary={skincarePanel.summary}
+              metaLine={skincarePanel.metaLine}
+              highlights={skincarePanel.highlights}
               items={skincareItems}
               reminders={skincarePlan.reminders}
               badge={skincarePlan.evening.theme}
               accent="sky"
               compact
+              variant="timeline"
+              reminderTitle="护理提醒"
             />
           </div>
         </section>
