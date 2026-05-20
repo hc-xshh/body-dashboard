@@ -67,7 +67,7 @@ test('builds structured metric insights from the image-derived guidance', () => 
   assert.ok(boneInsight.dietAdvice.some(item => item.includes('牛奶')))
 })
 
-test('limits health metric details to the top priorities and summarizes the rest for quick scanning', () => {
+test('builds a compact fold-summary while keeping all metric insights available', () => {
   const insights = [
     { key: 'weight', label: '体重', statusLabel: '偏胖' },
     { key: 'bodyFat', label: '体脂率', statusLabel: '偏胖' },
@@ -76,12 +76,13 @@ test('limits health metric details to the top priorities and summarizes the rest
     { key: 'water', label: '水分', statusLabel: '偏低' },
   ]
 
-  const presentation = getMetricInsightPresentation(insights, { maxDetailed: 3 })
+  const presentation = getMetricInsightPresentation(insights)
 
   assert.deepEqual(
-    presentation.detailed.map(item => item.key),
-    ['bodyFat', 'bmr', 'visceralFat'],
+    presentation.items.map(item => item.key),
+    ['bodyFat', 'bmr', 'visceralFat', 'water', 'weight'],
   )
-  assert.match(presentation.remainingSummary, /体重偏胖/)
-  assert.match(presentation.remainingSummary, /水分偏低/)
+  assert.match(presentation.summary, /体脂率偏胖/)
+  assert.match(presentation.summary, /基础代谢偏低/)
+  assert.match(presentation.summary, /共5项/)
 })

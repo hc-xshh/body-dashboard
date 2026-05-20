@@ -63,7 +63,7 @@ export default function AdvicePanel({ advice, engine = null, metricInsights = []
   )
 
   const metricInsightPresentation = useMemo(
-    () => getMetricInsightPresentation(metricInsights, { maxDetailed: 3 }),
+    () => getMetricInsightPresentation(metricInsights),
     [metricInsights],
   )
 
@@ -106,46 +106,40 @@ export default function AdvicePanel({ advice, engine = null, metricInsights = []
               )}
             </div>
           )}
-          {!!metricInsightPresentation.detailed.length && (
-            <div className="mt-4 space-y-3 border-t border-dark-700 pt-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="text-xs font-semibold uppercase tracking-widest text-slate-400">指标说明</div>
-                {metricInsightPresentation.remainingSummary && (
-                  <span className="text-[11px] text-slate-500">{metricInsightPresentation.remainingSummary}</span>
-                )}
-              </div>
-              <div className="space-y-3">
-                {metricInsightPresentation.detailed.map((insight) => (
-                  <div key={insight.key} className="rounded-xl border border-dark-700 bg-dark-900/45 p-3">
+          {!!metricInsightPresentation.items.length && (
+            <details className="mt-4 border-t border-dark-700 pt-4 group">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm text-slate-300">
+                <span>
+                  <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">指标说明</span>
+                  {metricInsightPresentation.summary && (
+                    <span className="ml-2 text-xs text-slate-500">{metricInsightPresentation.summary}</span>
+                  )}
+                </span>
+                <span className="text-xs text-slate-500 group-open:hidden">查看全部指标说明</span>
+                <span className="hidden text-xs text-slate-500 group-open:inline">收起指标说明</span>
+              </summary>
+              <div className="mt-3 space-y-4 border-l-2 border-dark-700 pl-3">
+                {metricInsightPresentation.items.map((insight) => (
+                  <div key={insight.key} className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-sm font-medium text-slate-100">{insight.label}</span>
-                      <span className="rounded-full border border-dark-600 bg-dark-950/70 px-2 py-0.5 text-[11px] text-slate-300">{insight.statusLabel}</span>
+                      <span className="text-xs text-slate-400">{insight.statusLabel}</span>
                       {insight.rangeText && <span className="text-[11px] text-slate-500">{insight.rangeText}</span>}
                     </div>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-200">{insight.summary}</p>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-400">{insight.analysis}</p>
-                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                      <div>
-                        <div className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">运动重点</div>
-                        <ul className="mt-2 space-y-1.5 text-sm leading-relaxed text-slate-300">
-                          {insight.movementAdvice.map((item) => (
-                            <li key={item}>• {item}</li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div>
-                        <div className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">饮食重点</div>
-                        <ul className="mt-2 space-y-1.5 text-sm leading-relaxed text-slate-300">
-                          {insight.dietAdvice.map((item) => (
-                            <li key={item}>• {item}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
+                    <p className="text-sm leading-relaxed text-slate-300">{insight.summary}</p>
+                    <p className="text-sm leading-relaxed text-slate-400">{insight.analysis}</p>
+                    <p className="text-sm leading-relaxed text-slate-400">
+                      <span className="text-slate-300">运动重点：</span>
+                      {insight.movementAdvice.join('；')}
+                    </p>
+                    <p className="text-sm leading-relaxed text-slate-400">
+                      <span className="text-slate-300">饮食重点：</span>
+                      {insight.dietAdvice.join('；')}
+                    </p>
                   </div>
                 ))}
               </div>
-            </div>
+            </details>
           )}
         </div>
       )}

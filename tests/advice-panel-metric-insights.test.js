@@ -4,11 +4,10 @@ import { readFileSync } from 'node:fs'
 
 const advicePanelSource = readFileSync(new URL('../src/components/AdvicePanel.jsx', import.meta.url), 'utf8')
 
-test('advice panel renders structured metric insight blocks from the new image guidance', () => {
+test('advice panel folds metric guidance behind a compact summary instead of large bubble cards', () => {
   assert.match(advicePanelSource, /metricInsights/)
-  assert.match(advicePanelSource, /metricInsightPresentation\.detailed/)
-  assert.match(advicePanelSource, /remainingSummary/)
-  assert.match(advicePanelSource, /指标说明/)
-  assert.match(advicePanelSource, /运动重点/)
-  assert.match(advicePanelSource, /饮食重点/)
+  assert.match(advicePanelSource, /<details/)
+  assert.match(advicePanelSource, /查看全部指标说明/)
+  assert.match(advicePanelSource, /metricInsightPresentation\.summary/)
+  assert.doesNotMatch(advicePanelSource, /rounded-xl border border-dark-700 bg-dark-900\/45 p-3/)
 })

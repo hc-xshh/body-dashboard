@@ -420,15 +420,15 @@ function formatInsightTag(insight) {
 }
 
 export function getMetricInsightPresentation(insights = [], options = {}) {
-  const { maxDetailed = 3 } = options
-  const sorted = [...insights].sort((a, b) => getInsightPriority(b) - getInsightPriority(a))
-  const detailed = sorted.slice(0, maxDetailed)
-  const remaining = sorted.slice(maxDetailed)
+  const { maxSummary = 3 } = options
+  const items = [...insights].sort((a, b) => getInsightPriority(b) - getInsightPriority(a))
+  const summaryItems = items.slice(0, maxSummary)
 
   return {
-    detailed,
-    remaining,
-    remainingSummary: remaining.length ? `其余指标：${remaining.map(formatInsightTag).join('、')}。` : null,
+    items,
+    summary: items.length
+      ? `共${items.length}项：${summaryItems.map(formatInsightTag).join('、')}${items.length > summaryItems.length ? '等' : ''}。`
+      : null,
   }
 }
 
