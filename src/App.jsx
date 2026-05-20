@@ -18,7 +18,6 @@ import { getDietPlan, getSkincarePlan, getTodayLabel, getTrainingPlan, weeklyTra
 import { getDecisionDisplay } from './utils/decisionPresentation'
 import {
   DEFAULT_TREND_METRIC_KEYS,
-  getHistoryCards,
   getMetricSelectorItems,
   sanitizeSelectedTrendMetrics,
 } from './utils/trendPresentation'
@@ -143,8 +142,8 @@ export default function App() {
     [selectedTrendMetricKeys],
   )
   const trendSelectorItems = useMemo(
-    () => getMetricSelectorItems(trendMetrics, selectedTrendMetrics.map(metric => metric.key)),
-    [selectedTrendMetrics],
+    () => getMetricSelectorItems(trendMetrics, selectedTrendMetricKeys),
+    [selectedTrendMetricKeys],
   )
   const historyDecisionMap = new Map(
     [...sorted]
@@ -156,7 +155,6 @@ export default function App() {
         return [record.date, decision]
       }),
   )
-  const historyCards = getHistoryCards(sorted, historyDecisionMap)
 
   return (
     <div className="min-h-screen bg-dark-900 text-slate-200 font-sans">
@@ -301,16 +299,15 @@ export default function App() {
                   onClick={() => setSelectedTrendMetricKeys((current) => {
                     const normalized = sanitizeSelectedTrendMetrics(current, trendMetrics)
                     if (normalized.includes(item.key)) {
-                      const next = normalized.filter((key) => key !== item.key)
-                      return next.length ? next : DEFAULT_TREND_METRIC_KEYS
+                      return normalized.filter((key) => key !== item.key)
                     }
                     return [...normalized, item.key]
                   })}
                   className={[
                     'rounded-full border px-3 py-1.5 text-xs transition sm:text-sm',
                     item.selected
-                      ? 'border-accent/60 bg-accent/12 text-accent-light'
-                      : 'border-dark-600 bg-dark-900/70 text-slate-300 hover:border-accent/35 hover:text-slate-100',
+                      ? 'border-violet-400/70 bg-violet-500/18 text-violet-100 shadow-[0_0_0_1px_rgba(167,139,250,0.16)]'
+                      : 'border-slate-700/80 bg-slate-950/80 text-slate-300 hover:border-violet-400/35 hover:text-slate-100',
                   ].join(' ')}
                 >
                   {item.label}
@@ -323,31 +320,8 @@ export default function App() {
 
         <section className="scroll-mt-24">
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">历史记录</h2>
-          <div className="space-y-3 sm:hidden">
-            <p className="text-sm leading-relaxed text-slate-400">
-              手机端默认改成卡片视图，只保留最常看信息；需要完整明细时再横向查看表格。
-            </p>
-            {historyCards.map((card) => (
-              <article key={card.key} className="rounded-xl border border-dark-600 bg-dark-800 p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-sm font-medium text-white">{card.dateLabel}</div>
-                    <div className="mt-1 text-xs leading-relaxed text-slate-400">{card.stageModeLabel}</div>
-                  </div>
-                </div>
-                <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
-                  {card.metrics.map((metric) => (
-                    <div key={`${card.key}-${metric.label}`} className="rounded-lg border border-dark-700 bg-dark-900/60 px-3 py-2">
-                      <dt className="text-[11px] uppercase tracking-wider text-slate-500">{metric.label}</dt>
-                      <dd className="mt-1 text-sm font-medium text-slate-200">{metric.value}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </article>
-            ))}
-          </div>
-          <div className="hidden overflow-x-auto rounded-xl border border-dark-600 bg-dark-800 sm:block">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto rounded-xl border border-dark-600 bg-dark-800">
+            <table className="w-full min-w-[760px] text-sm">
               <thead>
                 <tr className="border-b border-dark-600 text-slate-500 text-xs uppercase">
                   {['日期','阶段 / 模式','体重','体脂%','BMI','肌肉量','内脏脂肪','水分%','骨量','得分'].map(h => (

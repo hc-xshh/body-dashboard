@@ -52,6 +52,15 @@ function computeBaselineBand(data, metricKey, minSamples = 4) {
 export default function TrendChart({ data, metrics }) {
   const colors = ['#6c63ff', '#22c55e', '#f59e0b', '#ef4444', '#38bdf8']
   const layout = getTrendChartLayout(typeof window === 'undefined' ? 1280 : window.innerWidth)
+
+  if (!metrics.length) {
+    return (
+      <div className="rounded-xl border border-dashed border-dark-600 bg-dark-900/45 px-4 py-8 text-center text-sm leading-relaxed text-slate-400">
+        当前未选择任何指标，图表留空。勾选上方指标后再看趋势线。
+      </div>
+    )
+  }
+
   const decisionTimeline = buildDecisionTimeline(data)
   const decisionMap = new Map(decisionTimeline.map(item => [item.date, item]))
   const latestDecision = decisionTimeline[decisionTimeline.length - 1] ?? null
