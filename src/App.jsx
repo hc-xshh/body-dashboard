@@ -12,7 +12,14 @@ import {
 } from './utils/healthAnalysis'
 import { analyzeBodySignals } from './utils/rulesEngine'
 import { getTrainingContext } from './utils/trainingContext'
-import { getMeasurementOverview, getWeightPresentation } from './utils/dashboardState'
+import {
+  getMeasurementOverview,
+  getMeasurementsWithinDays,
+  getWeightPresentation,
+  HISTORY_PAGE_SIZE_OPTIONS,
+  paginateMeasurements,
+  TREND_RANGE_OPTIONS,
+} from './utils/dashboardState'
 import {
   getDietPlan,
   getSkincarePlan,
@@ -118,6 +125,9 @@ export default function App() {
 
   const skincarePlan = getSkincarePlan(todayLabel)
   const [selectedTrendMetricKeys, setSelectedTrendMetricKeys] = useState(DEFAULT_TREND_METRIC_KEYS)
+  const [selectedTrendRangeDays, setSelectedTrendRangeDays] = useState(TREND_RANGE_OPTIONS[0].days)
+  const [historyPageSize, setHistoryPageSize] = useState(HISTORY_PAGE_SIZE_OPTIONS[0])
+  const [historyPage, setHistoryPage] = useState(1)
   const trainingPlan = getTrainingPlan(todayLabel)
   const skincareItems = [
     {
@@ -150,6 +160,17 @@ export default function App() {
   const trendSelectorItems = useMemo(
     () => getMetricSelectorItems(trendMetrics, selectedTrendMetricKeys),
     [selectedTrendMetricKeys],
+  )
+  const filteredTrendMeasurements = useMemo(
+    () => getMeasurementsWithinDays(sorted, {
+      latestDate: latest.date,
+      days: selectedTrendRangeDays,
+    }),
+    [latest.date, selectedTrendRangeDays, sorted],
+  )
+  const paginatedHistory = useMemo(
+    () => paginateMeasurements(sorted, { page: historyPage, pageSize: historyPageSize }),
+    [historyPage, historyPageSize, sorted],
   )
   const weightPresentation = getWeightPresentation(sorted)
   const trainingReminders = getTrainingReadingReminders(todayLabel, trainingPlan.badge)
@@ -293,8 +314,28 @@ export default function App() {
         <section id="story-trend" className="scroll-mt-24">
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">趋势总览</h2>
           <div className="bg-dark-800 rounded-xl p-4 border border-dark-600">
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              {TREND_RANGE_OPTIONS.map((option) => {
+                const selected = selectedTrendRangeDays === option.days
+                return (
+                  <button
+                    key={option.days}
+                    type="button"
+                    onClick={() => setSelectedTrendRangeDays(option.days)}
+                    className={[
+                      'rounded-full border px-3 py-1.5 text-xs transition sm:text-sm',
+                      selected
+                        ? 'border-emerald-400/70 bg-emerald-500/18 text-emerald-100 shadow-[0_0_0_1px_rgba(52,211,153,0.16)]'
+                        : 'border-slate-700/80 bg-slate-950/80 text-slate-300 hover:border-emerald-400/35 hover:text-slate-100',
+                    ].join(' ')}
+                  >
+                    {option.label}
+                  </button>
+                )
+              })}
+            </div>
             <p className="mb-4 text-sm leading-relaxed text-slate-400">
-              默认看体重、体脂、肌肉；按需勾选其他指标。
+              默认看体重、体脂、肌肉；按需勾选其他指标。当前窗口：{TREND_RANGE_OPTIONS.find(option => option.days === selectedTrendRangeDays)?.label ?? '近7天'}。
             </p>
             <div className="mb-4 flex flex-wrap gap-2">
               {trendSelectorItems.map((item) => (
@@ -319,12 +360,44 @@ export default function App() {
                 </button>
               ))}
             </div>
-            <TrendChart data={measurements} metrics={selectedTrendMetrics} />
+            <TrendChart
+              data={filteredTrendMeasurements}
+              metrics={selectedTrendMetrics}
+              rangeLabel={TREND_RANGE_OPTIONS.find(option => option.days === selectedTrendRangeDays)?.label ?? '近7天'}
+            />
           </div>
         </section>
 
         <section className="scroll-mt-24">
-          <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">历史记录</h2>
+          <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-400">历史记录</h2>
+            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 sm:text-sm">
+              <span>每页显示</span>
+              <div className="flex flex-wrap gap-2">
+                {HISTORY_PAGE_SIZE_OPTIONS.map((size) => {
+                  const selected = historyPageSize === size
+                  return (
+                    <button
+                      key={size}
+                      type="button"
+                      onClick={() => {
+                        setHistoryPageSize(size)
+                        setHistoryPage(1)
+                      }}
+                      className={[
+                        'rounded-full border px-3 py-1.5 transition',
+                        selected
+                          ? 'border-sky-400/70 bg-sky-500/18 text-sky-100 shadow-[0_0_0_1px_rgba(56,189,248,0.16)]'
+                          : 'border-slate-700/80 bg-slate-950/80 text-slate-300 hover:border-sky-400/35 hover:text-slate-100',
+                      ].join(' ')}
+                    >
+                      {size}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
           <div className="overflow-x-auto rounded-xl border border-dark-600 bg-dark-800">
             <table className="w-full min-w-[760px] text-sm">
               <thead>
@@ -335,7 +408,7 @@ export default function App() {
                 </tr>
               </thead>
               <tbody>
-                {sorted.map((row) => {
+                {paginatedHistory.items.map((row) => {
                   const decision = historyDecisionMap.get(row.date)
                   return (
                     <tr key={`${row.date}-${row.time ?? ''}`} className="border-b border-dark-700/70 last:border-b-0">
@@ -354,6 +427,29 @@ export default function App() {
                 })}
               </tbody>
             </table>
+          </div>
+          <div className="mt-3 flex flex-col gap-2 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between sm:text-sm">
+            <span>
+              第 {paginatedHistory.page} / {paginatedHistory.totalPages} 页 · 共 {paginatedHistory.totalItems} 条
+            </span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setHistoryPage((current) => Math.max(1, current - 1))}
+                disabled={!paginatedHistory.hasPreviousPage}
+                className="rounded-full border border-slate-700/80 bg-slate-950/80 px-3 py-1.5 text-slate-300 transition enabled:hover:border-slate-500 enabled:hover:text-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                上一页
+              </button>
+              <button
+                type="button"
+                onClick={() => setHistoryPage((current) => current + 1)}
+                disabled={!paginatedHistory.hasNextPage}
+                className="rounded-full border border-slate-700/80 bg-slate-950/80 px-3 py-1.5 text-slate-300 transition enabled:hover:border-slate-500 enabled:hover:text-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                下一页
+              </button>
+            </div>
           </div>
         </section>
 

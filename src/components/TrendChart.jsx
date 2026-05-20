@@ -49,7 +49,7 @@ function computeBaselineBand(data, metricKey, minSamples = 4) {
   }
 }
 
-export default function TrendChart({ data, metrics }) {
+export default function TrendChart({ data, metrics, rangeLabel = '近7天' }) {
   const colors = ['#6c63ff', '#22c55e', '#f59e0b', '#ef4444', '#38bdf8']
   const layout = getTrendChartLayout(typeof window === 'undefined' ? 1280 : window.innerWidth)
 
@@ -57,6 +57,14 @@ export default function TrendChart({ data, metrics }) {
     return (
       <div className="rounded-xl border border-dashed border-dark-600 bg-dark-900/45 px-4 py-8 text-center text-sm leading-relaxed text-slate-400">
         当前未选择任何指标，图表留空。勾选上方指标后再看趋势线。
+      </div>
+    )
+  }
+
+  if (!data.length) {
+    return (
+      <div className="rounded-xl border border-dashed border-dark-600 bg-dark-900/45 px-4 py-8 text-center text-sm leading-relaxed text-slate-400">
+        {rangeLabel}内暂无可用样本，先保留空图；切换更长时间范围后再看趋势。
       </div>
     )
   }
@@ -70,7 +78,6 @@ export default function TrendChart({ data, metrics }) {
     const prev = list[index - 1]
     return item.primaryMode !== prev.primaryMode || item.stageLabel !== prev.stageLabel
   })
-  const recentChangeEvents = changeEvents.slice(-4).reverse()
 
   // Earliest/latest date range for band overlay
   const dates = data.filter(d => d.date).map(d => d.date).sort()
@@ -210,21 +217,6 @@ export default function TrendChart({ data, metrics }) {
           <p className="text-sm leading-relaxed text-slate-300">
             {latestDecisionDisplay?.compactSummary ?? latestDecision.summary}
           </p>
-
-          {!!recentChangeEvents.length && (
-            <div className="hidden gap-2 sm:grid sm:grid-cols-2 xl:grid-cols-4">
-              {recentChangeEvents.map(event => (
-                <div key={`${event.date}-${event.primaryMode}`} className="rounded-lg border border-dark-700 bg-dark-900/55 px-3 py-2.5">
-                  <div className="text-[11px] uppercase tracking-widest text-slate-500">{event.date} · {event.weekday}</div>
-                  <div className="mt-1 text-sm font-medium text-slate-100">{event.badge}</div>
-                  <div className="mt-1 text-xs leading-relaxed text-slate-400">{event.stageLabel} · {event.trainingLoadLabel}</div>
-                  {(event.trendText || event.riskText) && (
-                    <p className="mt-2 text-xs leading-relaxed text-slate-300">{event.trendText ?? event.riskText}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       )}
 

@@ -15,6 +15,15 @@ function differenceInDays(laterDate, earlierDate) {
   return Math.floor((laterUtc - earlierUtc) / 86400000)
 }
 
+export const TREND_RANGE_OPTIONS = [
+  { label: '近7天', days: 7 },
+  { label: '近10天', days: 10 },
+  { label: '近2周', days: 14 },
+  { label: '近1个月', days: 30 },
+]
+
+export const HISTORY_PAGE_SIZE_OPTIONS = [7, 10, 20, 50]
+
 function formatWeightNumber(value, digits = 2) {
   return Number(value).toFixed(digits)
 }
@@ -121,6 +130,46 @@ export function getWeightPresentation(measurements = [], options = {}) {
   return {
     references,
     status,
+  }
+}
+
+export function getMeasurementsWithinDays(measurements = [], options = {}) {
+  const {
+    latestDate = measurements[0]?.date ?? null,
+    days = 7,
+  } = options
+
+  if (!latestDate || !Number.isFinite(days) || days <= 0) return []
+
+  return measurements.filter((record) => {
+    const diff = differenceInDays(latestDate, record?.date)
+    return diff != null && diff >= 0 && diff < days
+  })
+}
+
+export function paginateMeasurements(measurements = [], options = {}) {
+  const {
+    page = 1,
+    pageSize = HISTORY_PAGE_SIZE_OPTIONS[0],
+  } = options
+
+  const normalizedPageSize = Number.isFinite(pageSize) && pageSize > 0
+    ? Math.floor(pageSize)
+    : HISTORY_PAGE_SIZE_OPTIONS[0]
+
+  const totalPages = Math.max(1, Math.ceil(measurements.length / normalizedPageSize))
+  const normalizedPage = Math.min(Math.max(1, Math.floor(page)), totalPages)
+  const start = (normalizedPage - 1) * normalizedPageSize
+  const items = measurements.slice(start, start + normalizedPageSize)
+
+  return {
+    items,
+    page: normalizedPage,
+    pageSize: normalizedPageSize,
+    totalItems: measurements.length,
+    totalPages,
+    hasPreviousPage: normalizedPage > 1,
+    hasNextPage: normalizedPage < totalPages,
   }
 }
 
