@@ -208,7 +208,7 @@ export default function App() {
         <section id="story-status" className="scroll-mt-24">
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">核心指标</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <MetricCard label="体重" value={latest.weight} unit="kg" status="na" sub={weightPresentation.status} reference={weightPresentation.reference} />
+            <MetricCard label="体重" value={latest.weight} unit="kg" status="na" sub={weightPresentation.status} references={weightPresentation.references} />
             <MetricCard label="体脂率" value={latest.bodyFat} unit="%" status={getBodyFatStatus(latest.bodyFat)} sub={latest.bodyFat > 20 ? '偏高' : latest.bodyFat < 10 ? '偏低' : '正常'} reference={metricReferenceMap.bodyFat} />
             <MetricCard label="BMI" value={latest.bmi} status="na" sub={latest.bmi > 23.9 ? '偏高' : latest.bmi < 18.5 ? '偏低' : '正常'} reference={metricReferenceMap.bmi} />
             <MetricCard label="基础代谢" value={latest.bmr} unit="kcal" status={getBMRStatus(latest.bmr)} sub={latest.bmr < 1550 ? '偏低' : '正常'} reference={metricReferenceMap.bmr} />

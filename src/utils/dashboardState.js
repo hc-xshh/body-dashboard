@@ -15,8 +15,29 @@ function differenceInDays(laterDate, earlierDate) {
   return Math.floor((laterUtc - earlierUtc) / 86400000)
 }
 
-function formatWeightNumber(value) {
-  return Number(value).toFixed(2)
+function formatWeightNumber(value, digits = 2) {
+  return Number(value).toFixed(digits)
+}
+
+function inferHeightMetersFromLatestMeasurement(measurements = []) {
+  const latest = measurements.find(record => record?.weight != null && record?.bmi != null)
+  if (!latest) return null
+
+  const weight = Number(latest.weight)
+  const bmi = Number(latest.bmi)
+  if (!Number.isFinite(weight) || !Number.isFinite(bmi) || bmi <= 0) return null
+
+  return Math.sqrt(weight / bmi)
+}
+
+function getHealthyWeightBand(measurements = []) {
+  const heightMeters = inferHeightMetersFromLatestMeasurement(measurements)
+  if (!heightMeters) return null
+
+  return {
+    low: 18.5 * heightMeters * heightMeters,
+    high: 23.9 * heightMeters * heightMeters,
+  }
 }
 
 export function getWeightPresentation(measurements = [], options = {}) {
@@ -35,29 +56,70 @@ export function getWeightPresentation(measurements = [], options = {}) {
     .map(record => Number(record.weight))
     .filter(value => Number.isFinite(value))
 
-  if (candidates.length < minSamples) {
-    return {
-      reference: '以近30天稳定区间为主',
-      status: '近30天样本不足，先继续记录',
+  const healthyBand = getHealthyWeightBand(measurements)
+  const latestWeight = Number(measurements[0]?.weight)
+
+  let personalBand = null
+  if (candidates.length >= minSamples) {
+    const sortedValues = [...candidates].sort((a, b) => a - b)
+    personalBand = {
+      low: sortedValues[Math.floor(sortedValues.length * 0.25)],
+      high: sortedValues[Math.ceil(sortedValues.length * 0.75) - 1],
     }
   }
 
-  const sortedValues = [...candidates].sort((a, b) => a - b)
-  const low = sortedValues[Math.floor(sortedValues.length * 0.25)]
-  const high = sortedValues[Math.ceil(sortedValues.length * 0.75) - 1]
-  const latestWeight = Number(measurements[0]?.weight)
+  const references = [
+    healthyBand
+      ? `健康参考：${formatWeightNumber(healthyBand.low, 1)}-${formatWeightNumber(healthyBand.high, 1)} kg`
+      : '健康参考：需补全身高/BMI后计算',
+    personalBand
+      ? `个人波动：${formatWeightNumber(personalBand.low)}-${formatWeightNumber(personalBand.high)} kg`
+      : '个人波动：近30天样本不足',
+  ]
 
-  let status = '处于个人稳定区间'
-  if (Number.isFinite(latestWeight)) {
-    if (latestWeight < low) {
-      status = '低于个人稳定区间'
-    } else if (latestWeight > high) {
-      status = '高于个人稳定区间'
+  let status = '先补全健康参考数据'
+  if (Number.isFinite(latestWeight) && healthyBand && personalBand) {
+    const aboveHealthy = latestWeight > healthyBand.high
+    const belowHealthy = latestWeight < healthyBand.low
+    const withinPersonal = latestWeight >= personalBand.low && latestWeight <= personalBand.high
+    const abovePersonal = latestWeight > personalBand.high
+    const belowPersonal = latestWeight < personalBand.low
+
+    if (aboveHealthy && withinPersonal) {
+      status = '略高于健康上限，但处于近期个人稳定区间'
+    } else if (belowHealthy && withinPersonal) {
+      status = '低于健康下限，但处于近期个人稳定区间'
+    } else if (!aboveHealthy && !belowHealthy && withinPersonal) {
+      status = '处于健康范围，也处于近期个人稳定区间'
+    } else if (aboveHealthy && abovePersonal) {
+      status = '高于健康上限，也高于近期个人波动'
+    } else if (belowHealthy && belowPersonal) {
+      status = '低于健康下限，也低于近期个人波动'
+    } else if (aboveHealthy) {
+      status = '高于健康上限'
+    } else if (belowHealthy) {
+      status = '低于健康下限'
+    } else if (abovePersonal) {
+      status = '处于健康范围，但高于近期个人波动'
+    } else if (belowPersonal) {
+      status = '处于健康范围，但低于近期个人波动'
+    } else {
+      status = '处于健康范围'
     }
+  } else if (Number.isFinite(latestWeight) && healthyBand) {
+    if (latestWeight > healthyBand.high) {
+      status = '略高于健康上限，个人趋势样本仍不足'
+    } else if (latestWeight < healthyBand.low) {
+      status = '低于健康下限，个人趋势样本仍不足'
+    } else {
+      status = '处于健康范围，个人趋势样本仍不足'
+    }
+  } else if (!personalBand) {
+    status = '近30天样本不足，先继续记录'
   }
 
   return {
-    reference: `${formatWeightNumber(low)}-${formatWeightNumber(high)} kg`,
+    references,
     status,
   }
 }
