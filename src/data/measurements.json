@@ -12,12 +12,43 @@
     "subcutaneousFat": 14.8,
     "protein": 16.2,
     "skeletalMuscleRate": 43.6,
-    "leanBodyMass": 53.0,
+    "leanBodyMass": 53,
     "water": 53.3,
     "bone": 2.7,
     "score": 77,
     "bodyAge": 30,
-    "bodyType": "偏胖型"
+    "bodyType": "偏胖型",
+    "decisionSnapshot": {
+      "version": "rules-engine-snapshot-v1",
+      "badge": "恢复优先",
+      "stageLabel": "恢复阶段",
+      "primaryMode": "recovery_first",
+      "trainingLoad": "mixed",
+      "trainingLoadLabel": "恢复 + 有氧日",
+      "intakeStrategy": "protect_recovery",
+      "summary": "今天更重要的是恢复和稳定执行，不把恢复日误用成补偿性进食或极端减餐日。",
+      "confidence": 0.88,
+      "evidenceGroups": {
+        "baseline": [
+          "体脂相对个人基线 +1.2%",
+          "体脂个人波动带 20.7% - 22.5%，当前处于带内",
+          "体重相对个人基线 -0.3kg",
+          "体重个人波动带 68.2 - 68.8kg，当前处于带外偏低",
+          "长窗口已覆盖 10 次记录，判断不只看最近 1-2 次波动"
+        ],
+        "trend": [
+          "近几次体脂 -0.3%",
+          "近几次体重 +1.8kg",
+          "短窗口体脂斜率 -0.10%/次"
+        ],
+        "risk": [
+          "内脏脂肪指数 10 处于偏高区间"
+        ],
+        "hydration": [
+          "当前水分 53.3% 偏低"
+        ]
+      }
+    }
   },
   {
     "date": "2026-05-19",
@@ -32,12 +63,46 @@
     "subcutaneousFat": 13.8,
     "protein": 16.6,
     "skeletalMuscleRate": 44.4,
-    "leanBodyMass": 54.0,
+    "leanBodyMass": 54,
     "water": 54.3,
     "bone": 2.7,
     "score": 77,
     "bodyAge": 30,
-    "bodyType": "标准型"
+    "bodyType": "标准型",
+    "decisionSnapshot": {
+      "version": "rules-engine-snapshot-v1",
+      "badge": "恢复优先",
+      "stageLabel": "恢复回补阶段",
+      "primaryMode": "recovery_first",
+      "trainingLoad": "lower_body_strength",
+      "trainingLoadLabel": "下肢力量日",
+      "intakeStrategy": "protect_recovery",
+      "summary": "今天更重要的是恢复和稳定执行，不把恢复日误用成补偿性进食或极端减餐日。",
+      "confidence": 0.94,
+      "evidenceGroups": {
+        "baseline": [
+          "体脂相对个人基线 -0.3%",
+          "体脂个人波动带 20.7% - 22.5%，当前处于带内",
+          "体重相对个人基线 -0.3kg",
+          "体重个人波动带 68.2 - 68.8kg，当前处于带外偏低",
+          "长窗口已覆盖 10 次记录，判断不只看最近 1-2 次波动"
+        ],
+        "trend": [
+          "近几次体脂 -0.3%",
+          "近几次体重 +1.8kg",
+          "短窗口体脂斜率 -0.10%/次"
+        ],
+        "risk": [
+          "内脏脂肪指数 10 处于偏高区间",
+          "最近几次体重累计 +1.8kg",
+          "但体脂累计 -0.3%，更像恢复或糖原回补波动",
+          "体重/体脂仍接近个人基线区间"
+        ],
+        "hydration": [
+          "当前水分 54.3% 偏低"
+        ]
+      }
+    }
   },
   {
     "date": "2026-05-18",
@@ -57,7 +122,41 @@
     "bone": 2.7,
     "score": 76,
     "bodyAge": 30,
-    "bodyType": "标准型"
+    "bodyType": "标准型",
+    "decisionSnapshot": {
+      "version": "rules-engine-snapshot-v1",
+      "badge": "恢复优先",
+      "stageLabel": "恢复回补阶段",
+      "primaryMode": "recovery_first",
+      "trainingLoad": "upper_body_strength",
+      "trainingLoadLabel": "力量日",
+      "intakeStrategy": "protect_recovery",
+      "summary": "今天更重要的是恢复和稳定执行，不把恢复日误用成补偿性进食或极端减餐日。",
+      "confidence": 0.94,
+      "evidenceGroups": {
+        "baseline": [
+          "体脂相对个人基线 +0.2%",
+          "体脂个人波动带 20.7% - 22.5%，当前处于带内",
+          "体重相对个人基线 +0.5kg",
+          "体重个人波动带 68.2 - 68.8kg，当前处于带外偏高",
+          "长窗口已覆盖 10 次记录，判断不只看最近 1-2 次波动"
+        ],
+        "trend": [
+          "近几次体脂 -0.3%",
+          "近几次体重 +1.8kg",
+          "短窗口体脂斜率 -0.10%/次"
+        ],
+        "risk": [
+          "内脏脂肪指数 10 处于偏高区间",
+          "最近几次体重累计 +1.8kg",
+          "但体脂累计 -0.3%，更像恢复或糖原回补波动",
+          "体重/体脂仍接近个人基线区间"
+        ],
+        "hydration": [
+          "当前水分 53.9% 偏低"
+        ]
+      }
+    }
   },
   {
     "date": "2026-05-17",
@@ -77,7 +176,38 @@
     "bone": 2.7,
     "score": 77,
     "bodyAge": 30,
-    "bodyType": "偏胖型"
+    "bodyType": "偏胖型",
+    "decisionSnapshot": {
+      "version": "rules-engine-snapshot-v1",
+      "badge": "恢复优先",
+      "stageLabel": "恢复阶段",
+      "primaryMode": "recovery_first",
+      "trainingLoad": "mixed",
+      "trainingLoadLabel": "恢复 + 有氧日",
+      "intakeStrategy": "protect_recovery",
+      "summary": "今天更重要的是恢复和稳定执行，不把恢复日误用成补偿性进食或极端减餐日。",
+      "confidence": 0.88,
+      "evidenceGroups": {
+        "baseline": [
+          "体脂相对个人基线 +1.2%",
+          "体脂个人波动带 20.7% - 22.5%，当前处于带内",
+          "体重相对个人基线 -0.1kg",
+          "体重个人波动带 68.2 - 68.8kg，当前处于带内",
+          "长窗口已覆盖 10 次记录，判断不只看最近 1-2 次波动"
+        ],
+        "trend": [
+          "近几次体脂 -0.3%",
+          "近几次体重 +1.8kg",
+          "短窗口体脂斜率 -0.10%/次"
+        ],
+        "risk": [
+          "内脏脂肪指数 10 处于偏高区间"
+        ],
+        "hydration": [
+          "当前水分 53.3% 偏低"
+        ]
+      }
+    }
   },
   {
     "date": "2026-05-16",
@@ -85,7 +215,7 @@
     "weekday": "周六",
     "weight": 67.95,
     "bodyFat": 21.8,
-    "bmi": 24.0,
+    "bmi": 24,
     "bmr": 1508,
     "muscle": 50.4,
     "visceralFat": 10,
@@ -97,7 +227,41 @@
     "bone": 2.7,
     "score": 77,
     "bodyAge": 30,
-    "bodyType": "标准型"
+    "bodyType": "标准型",
+    "decisionSnapshot": {
+      "version": "rules-engine-snapshot-v1",
+      "badge": "恢复优先",
+      "stageLabel": "恢复回补阶段",
+      "primaryMode": "recovery_first",
+      "trainingLoad": "cardio",
+      "trainingLoadLabel": "有氧日",
+      "intakeStrategy": "protect_recovery",
+      "summary": "今天更重要的是恢复和稳定执行，不把恢复日误用成补偿性进食或极端减餐日。",
+      "confidence": 0.94,
+      "evidenceGroups": {
+        "baseline": [
+          "体脂相对个人基线 +0.8%",
+          "体脂个人波动带 20.7% - 22.5%，当前处于带内",
+          "体重相对个人基线 -0.4kg",
+          "体重个人波动带 68.2 - 68.8kg，当前处于带外偏低",
+          "长窗口已覆盖 10 次记录，判断不只看最近 1-2 次波动"
+        ],
+        "trend": [
+          "近几次体脂 -0.3%",
+          "近几次体重 +1.8kg",
+          "短窗口体脂斜率 -0.10%/次"
+        ],
+        "risk": [
+          "内脏脂肪指数 10 处于偏高区间",
+          "最近几次体重累计 +1.8kg",
+          "但体脂累计 -0.3%，更像恢复或糖原回补波动",
+          "体重/体脂仍接近个人基线区间"
+        ],
+        "hydration": [
+          "当前水分 53.6% 偏低"
+        ]
+      }
+    }
   },
   {
     "date": "2026-05-15",
@@ -105,7 +269,7 @@
     "weekday": "周五",
     "weight": 67.95,
     "bodyFat": 20.7,
-    "bmi": 24.0,
+    "bmi": 24,
     "bmr": 1508,
     "muscle": 51.2,
     "visceralFat": 10,
@@ -117,7 +281,41 @@
     "bone": 2.7,
     "score": 77,
     "bodyAge": 30,
-    "bodyType": "标准型"
+    "bodyType": "标准型",
+    "decisionSnapshot": {
+      "version": "rules-engine-snapshot-v1",
+      "badge": "恢复优先",
+      "stageLabel": "恢复回补阶段",
+      "primaryMode": "recovery_first",
+      "trainingLoad": "upper_body_strength",
+      "trainingLoadLabel": "力量日",
+      "intakeStrategy": "protect_recovery",
+      "summary": "今天更重要的是恢复和稳定执行，不把恢复日误用成补偿性进食或极端减餐日。",
+      "confidence": 0.94,
+      "evidenceGroups": {
+        "baseline": [
+          "体脂相对个人基线 -0.3%",
+          "体脂个人波动带 20.7% - 22.5%，当前处于带内",
+          "体重相对个人基线 -0.4kg",
+          "体重个人波动带 68.2 - 68.8kg，当前处于带外偏低",
+          "长窗口已覆盖 10 次记录，判断不只看最近 1-2 次波动"
+        ],
+        "trend": [
+          "近几次体脂 -0.3%",
+          "近几次体重 +1.8kg",
+          "短窗口体脂斜率 -0.10%/次"
+        ],
+        "risk": [
+          "内脏脂肪指数 10 处于偏高区间",
+          "最近几次体重累计 +1.8kg",
+          "但体脂累计 -0.3%，更像恢复或糖原回补波动",
+          "体重/体脂仍接近个人基线区间"
+        ],
+        "hydration": [
+          "当前水分 54.3% 偏低"
+        ]
+      }
+    }
   },
   {
     "date": "2026-05-14",
@@ -125,7 +323,7 @@
     "weekday": "周四",
     "weight": 67.95,
     "bodyFat": 20.7,
-    "bmi": 24.0,
+    "bmi": 24,
     "bmr": 1508,
     "muscle": 51.2,
     "visceralFat": 10,
@@ -137,7 +335,38 @@
     "bone": 2.7,
     "score": 77,
     "bodyAge": 30,
-    "bodyType": "标准型"
+    "bodyType": "标准型",
+    "decisionSnapshot": {
+      "version": "rules-engine-snapshot-v1",
+      "badge": "先观察",
+      "stageLabel": "噪声观察阶段",
+      "primaryMode": "observe_noise",
+      "trainingLoad": "upper_body_strength",
+      "trainingLoadLabel": "力量日",
+      "intakeStrategy": "support_training",
+      "summary": "最近数据存在一定噪声，今天以稳定执行为主，不根据单次波动做大动作。",
+      "confidence": 0.86,
+      "evidenceGroups": {
+        "baseline": [
+          "体脂相对个人基线 -1.0%",
+          "体脂个人波动带 20.9% - 22.5%，当前处于带外偏低",
+          "体重相对个人基线 -0.4kg",
+          "体重个人波动带 68.2 - 68.8kg，当前处于带外偏低",
+          "长窗口已覆盖 9 次记录，判断不只看最近 1-2 次波动"
+        ],
+        "trend": [
+          "近几次体脂 -0.3%",
+          "近几次体重 +1.8kg",
+          "短窗口体脂斜率 -0.10%/次"
+        ],
+        "risk": [
+          "内脏脂肪指数 10 处于偏高区间"
+        ],
+        "hydration": [
+          "当前水分 54.3% 偏低"
+        ]
+      }
+    }
   },
   {
     "date": "2026-05-13",
@@ -152,24 +381,58 @@
     "subcutaneousFat": 14.9,
     "protein": 16.1,
     "skeletalMuscleRate": 43.5,
-    "leanBodyMass": 53.0,
+    "leanBodyMass": 53,
     "water": 53.2,
     "bone": 2.7,
     "score": 77,
     "bodyAge": 30,
-    "bodyType": "偏胖型"
+    "bodyType": "偏胖型",
+    "decisionSnapshot": {
+      "version": "rules-engine-snapshot-v1",
+      "badge": "恢复优先",
+      "stageLabel": "恢复回补阶段",
+      "primaryMode": "recovery_first",
+      "trainingLoad": "mixed",
+      "trainingLoadLabel": "恢复 + 有氧日",
+      "intakeStrategy": "protect_recovery",
+      "summary": "今天更重要的是恢复和稳定执行，不把恢复日误用成补偿性进食或极端减餐日。",
+      "confidence": 0.94,
+      "evidenceGroups": {
+        "baseline": [
+          "体脂相对个人基线 ≈0%",
+          "体脂个人波动带 21.0% - 22.5%，当前处于带内",
+          "体重相对个人基线 ≈0kg",
+          "体重个人波动带 68.3 - 68.8kg，当前处于带内",
+          "长窗口已覆盖 8 次记录，判断不只看最近 1-2 次波动"
+        ],
+        "trend": [
+          "近几次体脂 -0.3%",
+          "近几次体重 +1.8kg",
+          "短窗口体脂斜率 -0.10%/次"
+        ],
+        "risk": [
+          "内脏脂肪指数 10 处于偏高区间",
+          "最近几次体重累计 +1.8kg",
+          "但体脂累计 -0.3%，更像恢复或糖原回补波动",
+          "体重/体脂仍接近个人基线区间"
+        ],
+        "hydration": [
+          "当前水分 53.2% 偏低"
+        ]
+      }
+    }
   },
   {
     "date": "2026-05-12",
     "time": "07:59",
     "weekday": "周二",
     "weight": 68.85,
-    "bodyFat": 21.0,
+    "bodyFat": 21,
     "bmi": 24.3,
     "bmr": 1521,
     "muscle": 51.7,
     "visceralFat": 10,
-    "subcutaneousFat": 14.0,
+    "subcutaneousFat": 14,
     "protein": 16.6,
     "skeletalMuscleRate": 44.2,
     "leanBodyMass": 54.4,
@@ -177,7 +440,41 @@
     "bone": 2.7,
     "score": 76,
     "bodyAge": 30,
-    "bodyType": "标准型"
+    "bodyType": "标准型",
+    "decisionSnapshot": {
+      "version": "rules-engine-snapshot-v1",
+      "badge": "恢复优先",
+      "stageLabel": "恢复回补阶段",
+      "primaryMode": "recovery_first",
+      "trainingLoad": "lower_body_strength",
+      "trainingLoadLabel": "下肢力量日",
+      "intakeStrategy": "protect_recovery",
+      "summary": "今天更重要的是恢复和稳定执行，不把恢复日误用成补偿性进食或极端减餐日。",
+      "confidence": 0.94,
+      "evidenceGroups": {
+        "baseline": [
+          "体脂相对个人基线 -0.8%",
+          "体脂个人波动带 21.0% - 22.5%，当前处于带内",
+          "体重相对个人基线 +0.5kg",
+          "体重个人波动带 68.3 - 68.8kg，当前处于带外偏高",
+          "长窗口已覆盖 7 次记录，判断不只看最近 1-2 次波动"
+        ],
+        "trend": [
+          "近几次体脂 -0.3%",
+          "近几次体重 +1.8kg",
+          "短窗口体脂斜率 -0.10%/次"
+        ],
+        "risk": [
+          "内脏脂肪指数 10 处于偏高区间",
+          "最近几次体重累计 +1.8kg",
+          "但体脂累计 -0.3%，更像恢复或糖原回补波动",
+          "体重/体脂仍接近个人基线区间"
+        ],
+        "hydration": [
+          "当前水分 54.1% 偏低"
+        ]
+      }
+    }
   },
   {
     "date": "2026-05-08",
@@ -189,7 +486,7 @@
     "bmr": 1521,
     "muscle": 50.7,
     "visceralFat": 10,
-    "subcutaneousFat": 15.0,
+    "subcutaneousFat": 15,
     "protein": 16.2,
     "skeletalMuscleRate": 43.4,
     "leanBodyMass": 53.3,
@@ -197,19 +494,53 @@
     "bone": 2.7,
     "score": 76,
     "bodyAge": 30,
-    "bodyType": "偏胖型"
+    "bodyType": "偏胖型",
+    "decisionSnapshot": {
+      "version": "rules-engine-snapshot-v1",
+      "badge": "恢复优先",
+      "stageLabel": "恢复回补阶段",
+      "primaryMode": "recovery_first",
+      "trainingLoad": "upper_body_strength",
+      "trainingLoadLabel": "力量日",
+      "intakeStrategy": "protect_recovery",
+      "summary": "今天更重要的是恢复和稳定执行，不把恢复日误用成补偿性进食或极端减餐日。",
+      "confidence": 0.94,
+      "evidenceGroups": {
+        "baseline": [
+          "体脂相对个人基线 ≈0%",
+          "体脂个人波动带 21.0% - 22.5%，当前处于带内",
+          "体重相对个人基线 +0.4kg",
+          "体重个人波动带 68.2 - 68.7kg，当前处于带外偏高",
+          "长窗口已覆盖 6 次记录，判断不只看最近 1-2 次波动"
+        ],
+        "trend": [
+          "近几次体脂 -0.3%",
+          "近几次体重 +1.8kg",
+          "短窗口体脂斜率 -0.10%/次"
+        ],
+        "risk": [
+          "内脏脂肪指数 10 处于偏高区间",
+          "最近几次体重累计 +1.8kg",
+          "但体脂累计 -0.3%，更像恢复或糖原回补波动",
+          "体重/体脂仍接近个人基线区间"
+        ],
+        "hydration": [
+          "当前水分 53.1% 偏低"
+        ]
+      }
+    }
   },
   {
     "date": "2026-05-06",
     "time": null,
     "weekday": "周三",
     "weight": 68.2,
-    "bodyFat": 21.0,
+    "bodyFat": 21,
     "bmi": 24.1,
     "bmr": 1528,
     "muscle": 51.5,
     "visceralFat": 10,
-    "subcutaneousFat": 14.0,
+    "subcutaneousFat": 14,
     "protein": 16.5,
     "skeletalMuscleRate": 44.2,
     "leanBodyMass": 53.9,
@@ -217,7 +548,40 @@
     "bone": 2.7,
     "score": 77,
     "bodyAge": 30,
-    "bodyType": "标准型"
+    "bodyType": "标准型",
+    "decisionSnapshot": {
+      "version": "rules-engine-snapshot-v1",
+      "badge": "恢复优先",
+      "stageLabel": "恢复回补阶段",
+      "primaryMode": "recovery_first",
+      "trainingLoad": "mixed",
+      "trainingLoadLabel": "恢复 + 有氧日",
+      "intakeStrategy": "protect_recovery",
+      "summary": "今天更重要的是恢复和稳定执行，不把恢复日误用成补偿性进食或极端减餐日。",
+      "confidence": 0.94,
+      "evidenceGroups": {
+        "baseline": [
+          "体脂相对个人基线 -0.8%",
+          "体脂个人波动带 20.8% - 22.5%，当前处于带内",
+          "体重相对个人基线 -0.1kg",
+          "体重个人波动带 68.2 - 68.4kg，当前处于带内"
+        ],
+        "trend": [
+          "近几次体脂 -0.3%",
+          "近几次体重 +1.8kg",
+          "短窗口体脂斜率 -0.10%/次"
+        ],
+        "risk": [
+          "内脏脂肪指数 10 处于偏高区间",
+          "最近几次体重累计 +1.8kg",
+          "但体脂累计 -0.3%，更像恢复或糖原回补波动",
+          "体重/体脂仍接近个人基线区间"
+        ],
+        "hydration": [
+          "当前水分 54.1% 偏低"
+        ]
+      }
+    }
   },
   {
     "date": "2026-04-30",
@@ -229,15 +593,47 @@
     "bmr": 1520,
     "muscle": 50.8,
     "visceralFat": 10,
-    "subcutaneousFat": 15.0,
+    "subcutaneousFat": 15,
     "protein": 16.2,
     "skeletalMuscleRate": 43.5,
-    "leanBodyMass": 53.0,
+    "leanBodyMass": 53,
     "water": 53.1,
     "bone": 2.7,
     "score": 76,
     "bodyAge": 30,
-    "bodyType": "偏胖型"
+    "bodyType": "偏胖型",
+    "decisionSnapshot": {
+      "version": "rules-engine-snapshot-v1",
+      "badge": "恢复优先",
+      "stageLabel": "恢复回补阶段",
+      "primaryMode": "recovery_first",
+      "trainingLoad": "upper_body_strength",
+      "trainingLoadLabel": "力量日",
+      "intakeStrategy": "protect_recovery",
+      "summary": "今天更重要的是恢复和稳定执行，不把恢复日误用成补偿性进食或极端减餐日。",
+      "confidence": 0.94,
+      "evidenceGroups": {
+        "baseline": [
+          "体脂相对个人基线 ≈0%",
+          "体重相对个人基线 ≈0kg",
+          "体重个人波动带 68.0 - 68.6kg，当前处于带内"
+        ],
+        "trend": [
+          "近几次体脂 -0.3%",
+          "近几次体重 +1.8kg",
+          "短窗口体脂斜率 -0.10%/次"
+        ],
+        "risk": [
+          "内脏脂肪指数 10 处于偏高区间",
+          "最近几次体重累计 +1.8kg",
+          "但体脂累计 -0.3%，更像恢复或糖原回补波动",
+          "体重/体脂仍接近个人基线区间"
+        ],
+        "hydration": [
+          "当前水分 53.1% 偏低"
+        ]
+      }
+    }
   },
   {
     "date": "2026-04-23",
@@ -257,7 +653,37 @@
     "bone": 2.7,
     "score": 77,
     "bodyAge": 30,
-    "bodyType": "标准型"
+    "bodyType": "标准型",
+    "decisionSnapshot": {
+      "version": "rules-engine-snapshot-v1",
+      "badge": "收紧冗余热量",
+      "stageLabel": "增脂控制阶段",
+      "primaryMode": "tighten_intake",
+      "trainingLoad": "upper_body_strength",
+      "trainingLoadLabel": "力量日",
+      "intakeStrategy": "trim_extras",
+      "summary": "今天优先削掉下午加餐冗余、甜饮和晚间额外摄入，不动核心正餐蛋白。",
+      "confidence": 0.94,
+      "evidenceGroups": {
+        "baseline": [
+          "体脂相对个人基线 -1.1%",
+          "体重相对个人基线 -1.3kg"
+        ],
+        "trend": [
+          "近几次体脂 +1.9%",
+          "近几次体重 +1.8kg",
+          "短窗口体脂斜率 +0.95%/次"
+        ],
+        "risk": [
+          "内脏脂肪指数 10 处于偏高区间",
+          "最近几次体重累计 +1.8kg",
+          "体脂同步累计 +1.9%"
+        ],
+        "hydration": [
+          "当前水分 54.2% 偏低"
+        ]
+      }
+    }
   },
   {
     "date": "2026-04-15",
@@ -269,15 +695,45 @@
     "bmr": 1514,
     "muscle": 50.3,
     "visceralFat": 10,
-    "subcutaneousFat": 15.0,
+    "subcutaneousFat": 15,
     "protein": 16.1,
     "skeletalMuscleRate": 43.4,
-    "leanBodyMass": 53.0,
+    "leanBodyMass": 53,
     "water": 53.1,
     "bone": 2.7,
     "score": 77,
     "bodyAge": 30,
-    "bodyType": "偏胖型"
+    "bodyType": "偏胖型",
+    "decisionSnapshot": {
+      "version": "rules-engine-snapshot-v1",
+      "badge": "恢复优先",
+      "stageLabel": "恢复回补阶段",
+      "primaryMode": "recovery_first",
+      "trainingLoad": "mixed",
+      "trainingLoadLabel": "恢复 + 有氧日",
+      "intakeStrategy": "protect_recovery",
+      "summary": "今天更重要的是恢复和稳定执行，不把恢复日误用成补偿性进食或极端减餐日。",
+      "confidence": 0.92,
+      "evidenceGroups": {
+        "baseline": [
+          "体脂相对个人基线 ≈0%",
+          "体重相对个人基线 -0.4kg"
+        ],
+        "trend": [
+          "近几次体脂 -0.3%",
+          "近几次体重 +0.5kg"
+        ],
+        "risk": [
+          "内脏脂肪指数 10 处于偏高区间",
+          "最近几次体重累计 +0.5kg",
+          "但体脂累计 -0.3%，更像恢复或糖原回补波动",
+          "体重/体脂仍接近个人基线区间"
+        ],
+        "hydration": [
+          "当前水分 53.1% 偏低"
+        ]
+      }
+    }
   },
   {
     "date": "2026-04-14",
@@ -297,7 +753,32 @@
     "bone": 2.7,
     "score": 79,
     "bodyAge": 30,
-    "bodyType": null
+    "bodyType": null,
+    "decisionSnapshot": {
+      "version": "rules-engine-snapshot-v1",
+      "badge": "先观察",
+      "stageLabel": "噪声观察阶段",
+      "primaryMode": "observe_noise",
+      "trainingLoad": "lower_body_strength",
+      "trainingLoadLabel": "下肢力量日",
+      "intakeStrategy": "support_training",
+      "summary": "最近数据存在一定噪声，今天以稳定执行为主，不根据单次波动做大动作。",
+      "confidence": 0.8,
+      "evidenceGroups": {
+        "baseline": [
+          "体重相对个人基线 ≈0kg"
+        ],
+        "trend": [
+          "近几次体重 -0.3kg"
+        ],
+        "risk": [
+          "内脏脂肪指数 10 处于偏高区间"
+        ],
+        "hydration": [
+          "当前水分 53.3% 偏低"
+        ]
+      }
+    }
   },
   {
     "date": "2026-04-13",
@@ -317,6 +798,27 @@
     "bone": 2.7,
     "score": null,
     "bodyAge": null,
-    "bodyType": null
+    "bodyType": null,
+    "decisionSnapshot": {
+      "version": "rules-engine-snapshot-v1",
+      "badge": "先观察",
+      "stageLabel": "噪声观察阶段",
+      "primaryMode": "observe_noise",
+      "trainingLoad": "upper_body_strength",
+      "trainingLoadLabel": "力量日",
+      "intakeStrategy": "support_training",
+      "summary": "最近数据存在一定噪声，今天以稳定执行为主，不根据单次波动做大动作。",
+      "confidence": 0.71,
+      "evidenceGroups": {
+        "baseline": [],
+        "trend": [],
+        "risk": [
+          "内脏脂肪指数 10 处于偏高区间"
+        ],
+        "hydration": [
+          "当前水分 53.6% 偏低"
+        ]
+      }
+    }
   }
 ]

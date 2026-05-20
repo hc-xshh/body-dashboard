@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 
 import { analyzeBodySignals } from '../src/utils/rulesEngine.js'
 import { getTrainingContext } from '../src/utils/trainingContext.js'
+import { createDecisionSnapshot } from '../src/utils/historyDecisions.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -14,6 +15,7 @@ function parseArgs(argv) {
   return {
     json: argv.includes('--json'),
     full: argv.includes('--full'),
+    write: argv.includes('--write'),
     limit: (() => {
       const raw = argv.find(arg => arg.startsWith('--limit='))
       if (!raw) return 8
@@ -30,6 +32,7 @@ function buildTimeline(records) {
     const history = asc.slice(0, index + 1)
     const analysis = analyzeBodySignals(record, history, getTrainingContext(record.weekday))
     const decision = analysis.decision
+    const snapshot = createDecisionSnapshot(decision)
 
     return {
       date: record.date,
@@ -48,6 +51,7 @@ function buildTimeline(records) {
       trend: decision.evidenceGroups?.trend?.[0] ?? null,
       risk: decision.evidenceGroups?.risk?.[0] ?? null,
       signals: analysis.signals.map(signal => signal.key),
+      snapshot,
     }
   })
 }
@@ -101,8 +105,21 @@ const records = JSON.parse(raw)
 const timeline = buildTimeline(records)
 const transitions = getTransitions(timeline)
 
+if (args.write) {
+  const snapshotMap = new Map(timeline.map(entry => [`${entry.date} ${entry.time ?? ''}`, entry.snapshot]))
+  const updatedRecords = records.map((record) => ({
+    ...record,
+    decisionSnapshot: snapshotMap.get(`${record.date} ${record.time ?? ''}`) ?? record.decisionSnapshot ?? null,
+  }))
+  await fs.writeFile(measurementsPath, `${JSON.stringify(updatedRecords, null, 2)}\n`, 'utf8')
+}
+
 if (args.json) {
   console.log(JSON.stringify({ latest: timeline[timeline.length - 1], transitions, timeline }, null, 2))
 } else {
   printHumanSummary(timeline, transitions, args.limit, args.full)
+  if (args.write) {
+    console.log('')
+    console.log(`snapshots written -> ${measurementsPath}`)
+  }
 }

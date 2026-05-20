@@ -1,31 +1,23 @@
 import ReactECharts from 'echarts-for-react'
 import { getTrendData } from '../utils/healthAnalysis'
-import { analyzeBodySignals } from '../utils/rulesEngine'
-import { getTrainingContext } from '../utils/trainingContext'
+import { buildHistoricalDecisionTimeline } from '../utils/historyDecisions'
 import { getDecisionDisplay, getTrendSummaryText } from '../utils/decisionPresentation'
 import { getTrendChartLayout, getTrendChartRenderProps } from '../utils/trendPresentation'
 
 
 function buildDecisionTimeline(data = []) {
-  const asc = [...data].sort((a, b) => a.date.localeCompare(b.date))
-
-  return asc.map((record, index) => {
-    const history = asc.slice(0, index + 1)
-    const analysis = analyzeBodySignals(record, history, getTrainingContext(record.weekday))
-
-    return {
-      date: record.date,
-      weekday: record.weekday,
-      badge: analysis.decision.badge,
-      stageLabel: analysis.decision.stageLabel,
-      primaryMode: analysis.decision.primaryMode,
-      trainingLoadLabel: analysis.decision.trainingLoadLabel,
-      intakeStrategy: analysis.decision.intakeStrategy,
-      confidence: Math.round((analysis.decision.confidence ?? 0) * 100),
-      riskText: analysis.decision.evidenceGroups?.risk?.[0] ?? null,
-      trendText: analysis.decision.evidenceGroups?.trend?.[0] ?? null,
-    }
-  })
+  return buildHistoricalDecisionTimeline(data).map(({ record, decision }) => ({
+    date: record.date,
+    weekday: record.weekday,
+    badge: decision.badge,
+    stageLabel: decision.stageLabel,
+    primaryMode: decision.primaryMode,
+    trainingLoadLabel: decision.trainingLoadLabel,
+    intakeStrategy: decision.intakeStrategy,
+    confidence: Math.round((decision.confidence ?? 0) * 100),
+    riskText: decision.evidenceGroups?.risk?.[0] ?? null,
+    trendText: decision.evidenceGroups?.trend?.[0] ?? null,
+  }))
 }
 
 /**

@@ -7,10 +7,18 @@ import DailyPlanPanel from './components/DailyPlanPanel'
 import ReadingGuide from './components/ReadingGuide'
 import {
   generateAdvice,
-  getBodyFatStatus, getVisceralFatStatus, getWaterStatus,
-  getBMRStatus, getBoneStatus, getScoreStatus
+  getBMIStatus,
+  getBodyFatStatus,
+  getBMRStatus,
+  getBoneStatus,
+  getMuscleStatus,
+  getScoreStatus,
+  getVisceralFatStatus,
+  getWaterStatus,
 } from './utils/healthAnalysis'
 import { analyzeBodySignals } from './utils/rulesEngine'
+import { getMetricInsights, getMetricReferenceText } from './utils/metricGuidance.js'
+import { buildHistoricalDecisionTimeline } from './utils/historyDecisions.js'
 import { getTrainingContext } from './utils/trainingContext'
 import {
   getMeasurementOverview,
@@ -46,12 +54,13 @@ const trendMetrics = [
 
 const metricReferenceMap = {
   weight: '以近30天稳定区间为主',
-  bodyFat: '10-20%',
-  bmi: '18.5-23.9',
-  bmr: '≥1600 kcal',
-  visceralFat: '≤9',
-  water: '55-65%',
-  bone: '≥2.8 kg',
+  bodyFat: getMetricReferenceText('bodyFat'),
+  bmi: getMetricReferenceText('bmi'),
+  bmr: getMetricReferenceText('bmr'),
+  muscle: getMetricReferenceText('muscle'),
+  visceralFat: getMetricReferenceText('visceralFat'),
+  water: getMetricReferenceText('water'),
+  bone: getMetricReferenceText('bone'),
   score: '≥80',
 }
 
@@ -149,6 +158,7 @@ export default function App() {
     },
   ]
   const advice = generateAdvice(latest, prev, sorted, todayLabel)
+  const metricInsights = getMetricInsights(latest, prev)
   const dietPlan = getDietPlan(latest, todayLabel, todayTraining, sorted)
   const skincarePanel = getSkincarePanelPresentation(skincarePlan)
   const todayTrainingContext = getTrainingContext(todayLabel)
@@ -184,15 +194,9 @@ export default function App() {
       : bodyEngine.primaryMode === 'protect_metabolism'
         ? '今天重点是好好吃饭和恢复，不要再额外减量。'
         : '今天按计划完成就行，不用额外加码。'
+  const historyTimeline = buildHistoricalDecisionTimeline(sorted)
   const historyDecisionMap = new Map(
-    [...sorted]
-      .sort((a, b) => a.date.localeCompare(b.date))
-      .map((record, index, asc) => {
-        const history = asc.slice(0, index + 1)
-        const trainingContext = getTrainingContext(record.weekday)
-        const decision = analyzeBodySignals(record, history, trainingContext).decision
-        return [record.date, decision]
-      }),
+    historyTimeline.map(({ record, decision }) => [record.date, decision]),
   )
 
   return (
@@ -248,12 +252,13 @@ export default function App() {
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">核心指标</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <MetricCard label="体重" value={latest.weight} unit="kg" status="na" sub={weightPresentation.status} references={weightPresentation.references} />
-            <MetricCard label="体脂率" value={latest.bodyFat} unit="%" status={getBodyFatStatus(latest.bodyFat)} sub={latest.bodyFat > 20 ? '偏高' : latest.bodyFat < 10 ? '偏低' : '正常'} reference={metricReferenceMap.bodyFat} />
-            <MetricCard label="BMI" value={latest.bmi} status="na" sub={latest.bmi > 23.9 ? '偏高' : latest.bmi < 18.5 ? '偏低' : '正常'} reference={metricReferenceMap.bmi} />
-            <MetricCard label="基础代谢" value={latest.bmr} unit="kcal" status={getBMRStatus(latest.bmr)} sub={latest.bmr < 1550 ? '偏低' : '正常'} reference={metricReferenceMap.bmr} />
-            <MetricCard label="内脏脂肪" value={latest.visceralFat} status={getVisceralFatStatus(latest.visceralFat)} sub={latest.visceralFat >= 10 ? '偏高' : '正常'} reference={metricReferenceMap.visceralFat} />
-            <MetricCard label="水分" value={latest.water} unit="%" status={getWaterStatus(latest.water)} sub={latest.water < 55 ? '偏低' : latest.water > 65 ? '偏高' : '正常'} reference={metricReferenceMap.water} />
-            <MetricCard label="骨量" value={latest.bone} unit="kg" status={getBoneStatus(latest.bone)} sub={latest.bone < 2.8 ? '偏低' : '正常'} reference={metricReferenceMap.bone} />
+            <MetricCard label="体脂率" value={latest.bodyFat} unit="%" status={getBodyFatStatus(latest.bodyFat)} sub={latest.bodyFat >= 27 ? '肥胖' : latest.bodyFat >= 22 ? '偏胖' : latest.bodyFat < 11 ? '偏低' : '标准'} reference={metricReferenceMap.bodyFat} />
+            <MetricCard label="BMI" value={latest.bmi} status={getBMIStatus(latest.bmi)} sub={latest.bmi >= 28 ? '肥胖' : latest.bmi >= 24 ? '偏胖' : latest.bmi < 18.5 ? '偏瘦' : '标准'} reference={metricReferenceMap.bmi} />
+            <MetricCard label="基础代谢" value={latest.bmr} unit="kcal" status={getBMRStatus(latest.bmr)} sub={latest.bmr < 1566 ? '偏低' : '达标'} reference={metricReferenceMap.bmr} />
+            <MetricCard label="肌肉" value={latest.muscle} unit="kg" status={getMuscleStatus(latest.muscle)} sub={latest.muscle > 52.4 ? '优秀' : latest.muscle < 44 ? '不足' : '标准'} reference={metricReferenceMap.muscle} />
+            <MetricCard label="内脏脂肪" value={latest.visceralFat} status={getVisceralFatStatus(latest.visceralFat)} sub={latest.visceralFat >= 15 ? '超高' : latest.visceralFat >= 10 ? '偏高' : '标准'} reference={metricReferenceMap.visceralFat} />
+            <MetricCard label="水分" value={latest.water} unit="%" status={getWaterStatus(latest.water)} sub={latest.water < 55 ? '偏低' : latest.water > 65 ? '偏高' : '标准'} reference={metricReferenceMap.water} />
+            <MetricCard label="骨量" value={latest.bone} unit="kg" status={getBoneStatus(latest.bone)} sub={latest.bone < 2.8 ? '不足' : '标准'} reference={metricReferenceMap.bone} />
             <MetricCard label="综合得分" value={latest.score} status={getScoreStatus(latest.score)} sub={latest.score < 80 ? '偏低' : '正常'} reference={metricReferenceMap.score} />
           </div>
         </section>
@@ -262,7 +267,7 @@ export default function App() {
           <div className="flex flex-col">
             <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">健康建议</h2>
             <div className="bg-dark-800 rounded-xl p-4 border border-dark-600 min-h-[360px]">
-              <AdvicePanel advice={advice} engine={bodyEngine} />
+              <AdvicePanel advice={advice} engine={bodyEngine} metricInsights={metricInsights} />
             </div>
           </div>
         </section>

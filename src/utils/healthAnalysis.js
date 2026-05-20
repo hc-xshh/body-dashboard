@@ -11,9 +11,9 @@ export const STATUS = {
 
 export function getBodyFatStatus(v) {
   if (v == null) return STATUS.NA
-  if (v < 10) return STATUS.WARN      // 偏低
-  if (v <= 20) return STATUS.GOOD     // 正常
-  if (v <= 25) return STATUS.WARN     // 偏高
+  if (v < 11) return STATUS.WARN
+  if (v <= 22) return STATUS.GOOD
+  if (v <= 27) return STATUS.WARN
   return STATUS.BAD
 }
 
@@ -33,16 +33,15 @@ export function getWaterStatus(v) {
 
 export function getBMRStatus(v) {
   if (v == null) return STATUS.NA
-  if (v >= 1600) return STATUS.GOOD
+  if (v >= 1566) return STATUS.GOOD
   if (v >= 1500) return STATUS.WARN
   return STATUS.BAD
 }
 
 export function getBoneStatus(v) {
   if (v == null) return STATUS.NA
-  if (v >= 3.0) return STATUS.GOOD
-  if (v >= 2.8) return STATUS.WARN
-  return STATUS.BAD
+  if (v >= 2.9) return STATUS.GOOD
+  return STATUS.WARN
 }
 
 export function getScoreStatus(v) {
@@ -50,6 +49,21 @@ export function getScoreStatus(v) {
   if (v >= 80) return STATUS.GOOD
   if (v >= 70) return STATUS.WARN
   return STATUS.BAD
+}
+
+export function getBMIStatus(v) {
+  if (v == null) return STATUS.NA
+  if (v < 18.5) return STATUS.WARN
+  if (v < 24) return STATUS.GOOD
+  if (v < 28) return STATUS.WARN
+  return STATUS.BAD
+}
+
+export function getMuscleStatus(v) {
+  if (v == null) return STATUS.NA
+  if (v < 44) return STATUS.WARN
+  if (v <= 52.4) return STATUS.GOOD
+  return STATUS.GOOD
 }
 
 // 生成健康建议
