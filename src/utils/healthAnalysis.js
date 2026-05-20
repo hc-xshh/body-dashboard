@@ -1,5 +1,5 @@
 import { analyzeBodySignals } from './rulesEngine'
-import { getDecisionDisplay } from './decisionPresentation'
+
 
 // 判断指标状态
 export const STATUS = {
@@ -64,8 +64,7 @@ export function generateAdvice(latest, prev, history = [], currentWeekday = null
   }
   const seriesHistory = history.length ? history : [latest, prev].filter(Boolean)
   const analysis = analyzeBodySignals(latest, seriesHistory, trainingContext)
-  const { primaryMode, badge, confidence, evidence, evidenceGroups, stageLabel, trainingLoadLabel } = analysis.decision
-  const decisionDisplay = getDecisionDisplay(analysis.decision)
+  const { primaryMode } = analysis.decision
 
   const modeAdvice = {
     protect_metabolism: { level: 'warn', icon: '🛡️', text: '当前优先保护代谢与瘦体重：先稳住午餐、训练前补给和训练后蛋白，不因为短期波动继续激进减餐。' },
@@ -76,22 +75,6 @@ export function generateAdvice(latest, prev, history = [], currentWeekday = null
   }
 
   advice.push(modeAdvice[primaryMode] ?? modeAdvice.hold_course)
-  advice.push({
-    level: confidence >= 0.7 ? 'good' : confidence >= 0.55 ? 'warn' : 'bad',
-    icon: '🧭',
-      text: `主策略模式：${badge} · ${stageLabel}（负荷：${trainingLoadLabel} / 饮食策略：${decisionDisplay.intakeLabel} / 置信度 ${decisionDisplay.confidenceText}）。${evidence.length ? `依据：${evidence.join('；')}` : '当前历史记录较少，按保守策略输出。'}`,
-})
-
-  if (evidenceGroups?.baseline?.length || evidenceGroups?.trend?.length) {
-    advice.push({
-      level: 'good',
-      icon: '🪜',
-      text: `长窗口判断：${[
-        evidenceGroups?.baseline?.[0],
-        evidenceGroups?.trend?.[0],
-      ].filter(Boolean).join('；')}。`,
-    })
-  }
 
   if (latest.bodyFat != null) {
     if (latest.bodyFat > 22) {

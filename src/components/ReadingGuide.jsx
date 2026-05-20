@@ -99,13 +99,11 @@ export default function ReadingGuide({ sections = [], summary }) {
           <div className="min-w-0">
             <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">阅读路径</div>
             {summary && <div className="mt-1 text-sm leading-relaxed text-slate-300">{summary}</div>}
-            <div className="mt-1 text-xs text-slate-500 sm:hidden">左右滑动或点击跳转</div>
           </div>
-          <div className="hidden text-xs text-slate-500 sm:block">滚动页面时会自动联动高亮</div>
         </div>
 
         <div className="storyline-scroll flex items-stretch gap-2 overflow-x-auto sm:flex-wrap sm:items-center sm:overflow-visible">
-          {guides.map((guide, index) => {
+          {guides.map((guide) => {
             const isActive = activeSection === guide.id
 
             return (
@@ -113,19 +111,13 @@ export default function ReadingGuide({ sections = [], summary }) {
                 key={guide.id}
                 href={guide.target}
                 className={[
-                  'group min-w-[112px] shrink-0 rounded-xl border px-3 py-2.5 transition sm:min-w-[120px] sm:flex-1',
+                  'min-w-[96px] shrink-0 rounded-xl border px-3 py-2.5 text-center transition sm:min-w-[110px] sm:flex-1',
                   isActive
                     ? 'border-accent/70 bg-accent/12 text-white shadow-[0_0_0_1px_rgba(108,99,255,0.18)]'
                     : 'border-dark-600 bg-dark-800/80 text-slate-300 hover:border-accent/35 hover:bg-dark-700/70',
                 ].join(' ')}
               >
-                <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent/90">
-                  0{index + 1}
-                </div>
-                <div className="mt-1 text-sm font-medium">{guide.shortLabel}</div>
-                <div className="mt-1 hidden text-xs leading-relaxed text-slate-500 group-hover:text-slate-400 sm:block">
-                  {guide.shortDescription}
-                </div>
+                <div className="text-sm font-medium">{guide.shortLabel}</div>
               </a>
             )
           })}

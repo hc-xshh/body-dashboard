@@ -294,7 +294,7 @@ export default function App() {
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">趋势总览</h2>
           <div className="bg-dark-800 rounded-xl p-4 border border-dark-600">
             <p className="mb-4 text-sm leading-relaxed text-slate-400">
-              这里改成一张总趋势图：默认看体重、体脂、肌肉；你也可以多选别的指标一起看。手机端优先看上方结论卡，再按需切换曲线。
+              默认看体重、体脂、肌肉；按需勾选其他指标。
             </p>
             <div className="mb-4 flex flex-wrap gap-2">
               {trendSelectorItems.map((item) => (
@@ -358,7 +358,7 @@ export default function App() {
         </section>
 
         <footer className="pb-3 text-center text-xs leading-relaxed text-slate-500 sm:pb-4">
-          数据由 Hermes Agent 自动解析体测截图生成 · 饮食/训练/护肤建议基于 Obsidian 现有方案 + 当日体测动态展示 · 仅供个人参考
+          数据由 Hermes Agent 同步 · 仅供个人参考
         </footer>
       </main>
     </div>

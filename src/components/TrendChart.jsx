@@ -200,9 +200,6 @@ export default function TrendChart({ data, metrics }) {
             <span className="inline-flex rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent-light">
               最近一次体测阶段：{latestDecision.stageLabel}
             </span>
-            <span className="inline-flex rounded-full border border-dark-600 bg-dark-900/70 px-2.5 py-1 text-xs text-slate-200">
-              对应模式：{latestDecision.badge}
-            </span>
             <span className="inline-flex rounded-full border border-dark-600 bg-dark-900/70 px-2.5 py-1 text-xs text-slate-300">
               负荷：{latestDecision.trainingLoadLabel}
             </span>
