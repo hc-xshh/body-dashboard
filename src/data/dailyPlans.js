@@ -1,4 +1,5 @@
 import { analyzeBodySignals } from '../utils/rulesEngine.js'
+import { getIntakeStrategyLabel } from '../utils/decisionPresentation.js'
 import generatedTrainingPlans from './trainingPlans.generated.json'
 import generatedDietPlan from './dietPlan.generated.json'
 import generatedSkincarePlan from './skincarePlan.generated.json'
@@ -264,15 +265,6 @@ export function getDietPlan(latest, weekday, trainingLabel, history = []) {
     trendSignals.push(rules.signals.find(signal => signal.key === 'false_cut_risk')?.evidence?.join('；'))
   }
 
-  if (trendSignals.length) {
-    items.unshift({
-      time: '趋势驱动',
-      title: '最近趋势判断',
-      detail: trendSignals.filter(Boolean).join('；') + '。',
-      note: '这里优先看短中期趋势，而不是放大单次波动。',
-    })
-  }
-
   const longWindowSummary = [
     evidenceGroups?.baseline?.[0],
     evidenceGroups?.trend?.[0],
@@ -283,40 +275,24 @@ export function getDietPlan(latest, weekday, trainingLabel, history = []) {
     evidenceGroups?.baseline?.find(item => item.includes('相对个人基线')),
   ].filter(Boolean).join('；')
 
-  if (baselineBandSummary) {
-    items.unshift({
-      time: '基线带',
-      title: '个人波动带位置',
-      detail: `${baselineBandSummary}。`,
-      note: `当前训练负荷：${trainingLoadLabel}；今日 intake 策略：${intakeStrategy}。`,
-    })
-  }
-
-  if (longWindowSummary) {
-    items.unshift({
-      time: '长窗口',
-      title: '个人基线判断',
-      detail: `${longWindowSummary}。`,
-      note: '阶段二开始把最近记录放回个人基线里判断，减少“只看昨天 vs 今天”的误判。',
-    })
-  }
-
-  items.unshift({
-    time: '今日策略',
-    title: '主策略模式',
-    detail: summary,
-    emphasis: `当前模式：${decisionBadge} · ${stageLabel} · ${trainingLoadLabel} · intake=${intakeStrategy} · 置信度 ${(confidence * 100).toFixed(0)}%`,
-    note: evidence.length ? `证据：${evidence.join('；')}` : '当前记录数量不足时，以训练类型 + 最新体测做保守判断。',
-  })
-
   const uniqueReminders = [...new Set(reminders.filter(Boolean))]
-  const focusText = bodyFocus.length ? `当前重点：${[...new Set(bodyFocus)].join(' / ')}` : '当前重点：维持高蛋白 + 适度碳水 + 稳定执行'
-  const trendText = trendSignals.length ? `趋势监测：${trendSignals.filter(Boolean).join('；')}` : '趋势监测：当前以多窗口保守判断为主，避免放大单次波动。'
+  const uniqueBodyFocus = [...new Set(bodyFocus.filter(Boolean))]
+  const uniqueTrendSignals = [...new Set(trendSignals.filter(Boolean))]
+  const intakeLabel = getIntakeStrategyLabel(intakeStrategy)
+  const summaryHighlights = [
+    uniqueBodyFocus.length ? `当前重点：${uniqueBodyFocus.slice(0, 2).join(' / ')}` : null,
+    uniqueTrendSignals[0] ? `趋势：${uniqueTrendSignals[0]}` : null,
+    longWindowSummary ? `基线：${longWindowSummary}` : null,
+    baselineBandSummary ? `波动带：${baselineBandSummary}` : null,
+  ].filter(Boolean).slice(0, 3)
 
   return {
     badge: decisionBadge,
     goal: baseDietPlan.goal,
-    subtitle: `${focusText} · ${trendText} · 当前处于 ${stageLabel}，负荷背景为 ${trainingLoadLabel}，今日 intake 策略为 ${intakeStrategy}，今天按 ${decisionBadge} 模式细化餐次，训练主题为 ${trainingLabel}。`,
+    subtitle: '按当天训练和体测判断微调，直接顺着时间吃就行。',
+    summary,
+    metaLine: `${stageLabel} · ${trainingLoadLabel} · ${intakeLabel} · 置信度 ${(confidence * 100).toFixed(0)}%`,
+    highlights: summaryHighlights,
     items,
     reminders: uniqueReminders,
     engine: rules.decision,

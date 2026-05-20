@@ -28,7 +28,6 @@ import {
   getTrainingReadingReminders,
   weeklyTrainingLabel,
 } from './data/dailyPlans'
-import { getDecisionDisplay } from './utils/decisionPresentation'
 import {
   DEFAULT_TREND_METRIC_KEYS,
   getMetricSelectorItems,
@@ -297,16 +296,15 @@ export default function App() {
             <DailyPlanPanel
               title={`${todayLabel} 饮食执行单`}
               subtitle={dietPlan.subtitle}
+              summary={dietPlan.summary}
+              metaLine={dietPlan.metaLine}
+              highlights={dietPlan.highlights}
               items={dietPlan.items}
               reminders={dietPlan.reminders}
               badge={dietPlan.badge}
               accent="emerald"
-              contextChips={[
-                { label: '阶段', value: dietPlan.engine?.stageLabel ?? bodyEngine.stageLabel },
-                { label: '负荷', value: dietPlan.engine?.trainingLoadLabel ?? bodyEngine.trainingLoadLabel },
-                { label: '饮食策略', value: getDecisionDisplay(dietPlan.engine ?? bodyEngine).intakeLabel },
-                { label: '置信度', value: getDecisionDisplay(dietPlan.engine ?? bodyEngine).confidenceText },
-              ]}
+              variant="timeline"
+              reminderTitle="执行提醒"
             />
           </div>
         </section>
