@@ -1,4 +1,5 @@
-import { getDecisionDisplay } from '../utils/decisionPresentation'
+import { useMemo, useState } from 'react'
+import { getAdvicePanelPresentation, getDecisionDisplay } from '../utils/decisionPresentation'
 
 export default function AdvicePanel({ advice, engine = null }) {
   if (!advice.length) return null
@@ -6,6 +7,7 @@ export default function AdvicePanel({ advice, engine = null }) {
   const bg = { good: 'bg-green-900/20 border-green-700/40', warn: 'bg-amber-900/20 border-amber-700/40', bad: 'bg-red-900/20 border-red-700/40' }
   const text = { good: 'text-green-400', warn: 'text-amber-400', bad: 'text-red-400' }
   const decisionDisplay = engine ? getDecisionDisplay(engine) : null
+  const [mobileExpanded, setMobileExpanded] = useState(false)
 
   // ── evidenceGroups → structured card definitions ──
   const evidenceCards = []
@@ -54,6 +56,15 @@ export default function AdvicePanel({ advice, engine = null }) {
     }
   }
 
+  const advicePresentation = useMemo(
+    () => getAdvicePanelPresentation({
+      viewportWidth: typeof window === 'undefined' ? 1280 : window.innerWidth,
+      evidenceCards,
+      expanded: mobileExpanded,
+    }),
+    [evidenceCards, mobileExpanded],
+  )
+
   return (
     <div className="flex h-full flex-col gap-3">
       {/* ── Engine summary card ── */}
@@ -81,23 +92,35 @@ export default function AdvicePanel({ advice, engine = null }) {
 
           {/* ── Structured evidence cards ── */}
           {!!evidenceCards.length && (
-            <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
-              {evidenceCards.map(card => (
-                <div key={card.label} className={`rounded-lg border ${card.color} ${card.bg} px-3 py-3`}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-sm">{card.icon}</span>
-                    <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">{card.label}</span>
-                    <span className="text-[10px] text-slate-600 ml-auto">{card.hint}</span>
+            <div className="mt-4 space-y-3">
+              <div className="grid gap-2.5 sm:grid-cols-2">
+                {advicePresentation.visibleEvidenceCards.map(card => (
+                  <div key={card.label} className={`rounded-lg border ${card.color} ${card.bg} px-3 py-3`}>
+                    <div className="mb-2 flex items-center gap-2">
+                      <span className="text-sm">{card.icon}</span>
+                      <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">{card.label}</span>
+                      <span className="ml-auto text-[10px] text-slate-600">{card.hint}</span>
+                    </div>
+                    <div className="space-y-1.5">
+                      {card.items.map((item, idx) => (
+                        <p key={idx} className="border-l-2 border-dark-600/50 pl-5 text-xs leading-relaxed text-slate-300">
+                          {item}
+                        </p>
+                      ))}
+                    </div>
                   </div>
-                  <div className="space-y-1.5">
-                    {card.items.map((item, idx) => (
-                      <p key={idx} className="text-xs leading-relaxed text-slate-300 pl-5 border-l-2 border-dark-600/50">
-                        {item}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
+              {advicePresentation.toggleLabel && (
+                <button
+                  type="button"
+                  onClick={() => setMobileExpanded(current => !current)}
+                  className="inline-flex rounded-full border border-dark-600 bg-dark-900/70 px-3 py-1.5 text-xs text-slate-300 transition hover:border-accent/35 hover:text-slate-100 sm:hidden"
+                >
+                  {advicePresentation.toggleLabel}
+                  {advicePresentation.hiddenEvidenceCount > 0 ? `（还有 ${advicePresentation.hiddenEvidenceCount} 组）` : ''}
+                </button>
+              )}
             </div>
           )}
         </div>

@@ -1,7 +1,14 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { getHistoryCards, getMobileHistoryColumns, getTrendChartLayout } from '../src/utils/trendPresentation.js'
+import {
+  DEFAULT_TREND_METRIC_KEYS,
+  getHistoryCards,
+  getMetricSelectorItems,
+  getMobileHistoryColumns,
+  getTrendChartLayout,
+  sanitizeSelectedTrendMetrics,
+} from '../src/utils/trendPresentation.js'
 
 test('compacts history records into mobile-friendly cards', () => {
   const cards = getHistoryCards([
@@ -41,6 +48,46 @@ test('compacts history records into mobile-friendly cards', () => {
 test('keeps desktop columns but reduces mobile table columns', () => {
   const columns = getMobileHistoryColumns()
   assert.deepEqual(columns, ['日期', '阶段 / 模式', '体重', '体脂%'])
+})
+
+test('uses weight body fat and muscle as default selected metrics', () => {
+  assert.deepEqual(DEFAULT_TREND_METRIC_KEYS, ['weight', 'bodyFat', 'muscle'])
+})
+
+test('sanitizes selected metrics and falls back to defaults when empty', () => {
+  const available = [
+    { key: 'weight', label: '体重(kg)' },
+    { key: 'bodyFat', label: '体脂率(%)' },
+    { key: 'muscle', label: '肌肉量(kg)' },
+    { key: 'water', label: '水分(%)' },
+  ]
+
+  assert.deepEqual(
+    sanitizeSelectedTrendMetrics(['weight', 'water', 'unknown'], available),
+    ['weight', 'water']
+  )
+
+  assert.deepEqual(
+    sanitizeSelectedTrendMetrics([], available),
+    ['weight', 'bodyFat', 'muscle']
+  )
+})
+
+test('builds selector items with selected state for multi-select chips', () => {
+  const items = getMetricSelectorItems(
+    [
+      { key: 'weight', label: '体重(kg)' },
+      { key: 'bodyFat', label: '体脂率(%)' },
+      { key: 'muscle', label: '肌肉量(kg)' },
+    ],
+    ['weight', 'muscle']
+  )
+
+  assert.deepEqual(items, [
+    { key: 'weight', label: '体重(kg)', selected: true },
+    { key: 'bodyFat', label: '体脂率(%)', selected: false },
+    { key: 'muscle', label: '肌肉量(kg)', selected: true },
+  ])
 })
 
 test('returns denser chart layout for narrow screens', () => {

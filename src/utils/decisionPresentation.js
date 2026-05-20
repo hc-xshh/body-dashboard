@@ -25,6 +25,41 @@ export function getIntakeStrategyLabel(strategy) {
   return INTAKE_STRATEGY_LABELS[strategy] ?? strategy ?? '—'
 }
 
+export function getAdvicePanelPresentation({ viewportWidth = 1280, evidenceCards = [], expanded = false } = {}) {
+  const isMobile = viewportWidth < 640
+
+  if (!isMobile) {
+    return {
+      isMobile: false,
+      shouldCollapseEvidence: false,
+      visibleEvidenceCards: evidenceCards,
+      hiddenEvidenceCount: 0,
+      toggleLabel: null,
+    }
+  }
+
+  if (expanded) {
+    return {
+      isMobile: true,
+      shouldCollapseEvidence: false,
+      visibleEvidenceCards: evidenceCards,
+      hiddenEvidenceCount: 0,
+      toggleLabel: '收起判断依据',
+    }
+  }
+
+  const visibleEvidenceCards = evidenceCards.slice(0, 1)
+  const hiddenEvidenceCount = Math.max(0, evidenceCards.length - visibleEvidenceCards.length)
+
+  return {
+    isMobile: true,
+    shouldCollapseEvidence: hiddenEvidenceCount > 0,
+    visibleEvidenceCards,
+    hiddenEvidenceCount,
+    toggleLabel: hiddenEvidenceCount > 0 ? '展开更多判断依据' : null,
+  }
+}
+
 export function getDecisionDisplay(decision = {}) {
   const highlights = pickHighlights(decision.evidenceGroups)
   const summary = normalizeText(decision.summary)

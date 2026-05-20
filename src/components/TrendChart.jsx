@@ -206,7 +206,7 @@ export default function TrendChart({ data, metrics }) {
           </p>
 
           {!!recentChangeEvents.length && (
-            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="hidden gap-2 sm:grid sm:grid-cols-2 xl:grid-cols-4">
               {recentChangeEvents.map(event => (
                 <div key={`${event.date}-${event.primaryMode}`} className="rounded-lg border border-dark-700 bg-dark-900/55 px-3 py-2.5">
                   <div className="text-[11px] uppercase tracking-widest text-slate-500">{event.date} · {event.weekday}</div>

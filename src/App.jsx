@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react'
 import measurements from './data/measurements.json'
 import TrendChart from './components/TrendChart'
 import RadarChart from './components/RadarChart'
@@ -15,13 +16,16 @@ import { getTrainingContext } from './utils/trainingContext'
 import { getMeasurementOverview } from './utils/dashboardState'
 import { getDietPlan, getSkincarePlan, getTodayLabel, getTrainingPlan, weeklyTrainingLabel } from './data/dailyPlans'
 import { getDecisionDisplay } from './utils/decisionPresentation'
-import { getHistoryCards } from './utils/trendPresentation'
+import {
+  DEFAULT_TREND_METRIC_KEYS,
+  getHistoryCards,
+  getMetricSelectorItems,
+  sanitizeSelectedTrendMetrics,
+} from './utils/trendPresentation'
 
-const trendMetrics1 = [
+const trendMetrics = [
   { key: 'weight', label: '体重(kg)' },
   { key: 'bodyFat', label: '体脂率(%)' },
-]
-const trendMetrics2 = [
   { key: 'muscle', label: '肌肉量(kg)' },
   { key: 'water', label: '水分(%)' },
   { key: 'leanBodyMass', label: '去脂体重(kg)' },
@@ -108,6 +112,7 @@ export default function App() {
   }
 
   const skincarePlan = getSkincarePlan(todayLabel)
+  const [selectedTrendMetricKeys, setSelectedTrendMetricKeys] = useState(DEFAULT_TREND_METRIC_KEYS)
   const trainingPlan = getTrainingPlan(todayLabel)
   const skincareItems = [
     {
@@ -130,7 +135,17 @@ export default function App() {
   const dietPlan = getDietPlan(latest, todayLabel, todayTraining, sorted)
   const todayTrainingContext = getTrainingContext(todayLabel)
   const bodyEngine = analyzeBodySignals(latest, sorted, todayTrainingContext).decision
-  const bodyDecisionDisplay = getDecisionDisplay(bodyEngine)
+  const selectedTrendMetrics = useMemo(
+    () => {
+      const selectedKeys = sanitizeSelectedTrendMetrics(selectedTrendMetricKeys, trendMetrics)
+      return trendMetrics.filter(metric => selectedKeys.includes(metric.key))
+    },
+    [selectedTrendMetricKeys],
+  )
+  const trendSelectorItems = useMemo(
+    () => getMetricSelectorItems(trendMetrics, selectedTrendMetrics.map(metric => metric.key)),
+    [selectedTrendMetrics],
+  )
   const historyDecisionMap = new Map(
     [...sorted]
       .sort((a, b) => a.date.localeCompare(b.date))
@@ -273,19 +288,36 @@ export default function App() {
         </section>
 
         <section id="story-trend" className="scroll-mt-24">
-          <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">体重 & 体脂趋势</h2>
+          <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">趋势总览</h2>
           <div className="bg-dark-800 rounded-xl p-4 border border-dark-600">
             <p className="mb-4 text-sm leading-relaxed text-slate-400">
-              趋势区展示的是每次体测当时的历史判断，不等同于今天执行单。手机端优先看上方“最近一次体测阶段”和最近几次切换卡片，再按需展开图表细看。
+              这里改成一张总趋势图：默认看体重、体脂、肌肉；你也可以多选别的指标一起看。手机端优先看上方结论卡，再按需切换曲线。
             </p>
-            <TrendChart data={measurements} metrics={trendMetrics1} />
-          </div>
-        </section>
-
-        <section className="scroll-mt-24">
-          <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">肌肉 & 水分趋势</h2>
-          <div className="bg-dark-800 rounded-xl p-4 border border-dark-600">
-            <TrendChart data={measurements} metrics={trendMetrics2} />
+            <div className="mb-4 flex flex-wrap gap-2">
+              {trendSelectorItems.map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => setSelectedTrendMetricKeys((current) => {
+                    const normalized = sanitizeSelectedTrendMetrics(current, trendMetrics)
+                    if (normalized.includes(item.key)) {
+                      const next = normalized.filter((key) => key !== item.key)
+                      return next.length ? next : DEFAULT_TREND_METRIC_KEYS
+                    }
+                    return [...normalized, item.key]
+                  })}
+                  className={[
+                    'rounded-full border px-3 py-1.5 text-xs transition sm:text-sm',
+                    item.selected
+                      ? 'border-accent/60 bg-accent/12 text-accent-light'
+                      : 'border-dark-600 bg-dark-900/70 text-slate-300 hover:border-accent/35 hover:text-slate-100',
+                  ].join(' ')}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+            <TrendChart data={measurements} metrics={selectedTrendMetrics} />
           </div>
         </section>
 

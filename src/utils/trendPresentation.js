@@ -1,3 +1,5 @@
+export const DEFAULT_TREND_METRIC_KEYS = ['weight', 'bodyFat', 'muscle']
+
 function formatMetricValue(value, unit = '') {
   if (value == null || value === '') return '—'
   return `${value}${unit}`
@@ -27,6 +29,24 @@ export function getHistoryCards(rows = [], decisionMap = new Map()) {
 
 export function getMobileHistoryColumns() {
   return ['日期', '阶段 / 模式', '体重', '体脂%']
+}
+
+export function getMetricSelectorItems(metrics = [], selectedKeys = []) {
+  const selected = new Set(selectedKeys)
+  return metrics.map(metric => ({
+    key: metric.key,
+    label: metric.label,
+    selected: selected.has(metric.key),
+  }))
+}
+
+export function sanitizeSelectedTrendMetrics(selectedKeys = [], metrics = []) {
+  const available = new Set(metrics.map(metric => metric.key))
+  const filtered = [...new Set(selectedKeys)].filter(key => available.has(key))
+
+  if (filtered.length) return filtered
+
+  return DEFAULT_TREND_METRIC_KEYS.filter(key => available.has(key))
 }
 
 export function getTrendChartLayout(viewportWidth = 1280) {
