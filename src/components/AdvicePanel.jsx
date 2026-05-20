@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { getAdvicePanelPresentation, getDecisionDisplay } from '../utils/decisionPresentation'
+import { getMetricInsightPresentation } from '../utils/metricGuidance'
 
 export default function AdvicePanel({ advice, engine = null, metricInsights = [] }) {
   if (!advice.length) return null
@@ -61,6 +62,11 @@ export default function AdvicePanel({ advice, engine = null, metricInsights = []
     [evidenceCards, mobileExpanded],
   )
 
+  const metricInsightPresentation = useMemo(
+    () => getMetricInsightPresentation(metricInsights, { maxDetailed: 3 }),
+    [metricInsights],
+  )
+
   return (
     <div className="flex h-full flex-col">
       {engine && (
@@ -100,11 +106,16 @@ export default function AdvicePanel({ advice, engine = null, metricInsights = []
               )}
             </div>
           )}
-          {!!metricInsights.length && (
+          {!!metricInsightPresentation.detailed.length && (
             <div className="mt-4 space-y-3 border-t border-dark-700 pt-4">
-              <div className="text-xs font-semibold uppercase tracking-widest text-slate-400">指标说明</div>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="text-xs font-semibold uppercase tracking-widest text-slate-400">指标说明</div>
+                {metricInsightPresentation.remainingSummary && (
+                  <span className="text-[11px] text-slate-500">{metricInsightPresentation.remainingSummary}</span>
+                )}
+              </div>
               <div className="space-y-3">
-                {metricInsights.map((insight) => (
+                {metricInsightPresentation.detailed.map((insight) => (
                   <div key={insight.key} className="rounded-xl border border-dark-700 bg-dark-900/45 p-3">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-sm font-medium text-slate-100">{insight.label}</span>
@@ -115,7 +126,7 @@ export default function AdvicePanel({ advice, engine = null, metricInsights = []
                     <p className="mt-2 text-sm leading-relaxed text-slate-400">{insight.analysis}</p>
                     <div className="mt-3 grid gap-3 sm:grid-cols-2">
                       <div>
-                        <div className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">movementAdvice</div>
+                        <div className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">运动重点</div>
                         <ul className="mt-2 space-y-1.5 text-sm leading-relaxed text-slate-300">
                           {insight.movementAdvice.map((item) => (
                             <li key={item}>• {item}</li>
@@ -123,7 +134,7 @@ export default function AdvicePanel({ advice, engine = null, metricInsights = []
                         </ul>
                       </div>
                       <div>
-                        <div className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">dietAdvice</div>
+                        <div className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">饮食重点</div>
                         <ul className="mt-2 space-y-1.5 text-sm leading-relaxed text-slate-300">
                           {insight.dietAdvice.map((item) => (
                             <li key={item}>• {item}</li>

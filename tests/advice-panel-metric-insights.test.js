@@ -6,7 +6,9 @@ const advicePanelSource = readFileSync(new URL('../src/components/AdvicePanel.js
 
 test('advice panel renders structured metric insight blocks from the new image guidance', () => {
   assert.match(advicePanelSource, /metricInsights/)
+  assert.match(advicePanelSource, /metricInsightPresentation\.detailed/)
+  assert.match(advicePanelSource, /remainingSummary/)
   assert.match(advicePanelSource, /指标说明/)
-  assert.match(advicePanelSource, /movementAdvice/)
-  assert.match(advicePanelSource, /dietAdvice/)
+  assert.match(advicePanelSource, /运动重点/)
+  assert.match(advicePanelSource, /饮食重点/)
 })

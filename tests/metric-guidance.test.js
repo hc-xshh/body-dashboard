@@ -5,6 +5,7 @@ import {
   BODY_METRIC_GUIDANCE_VERSION,
   classifyDeviceMetric,
   getMetricInsights,
+  getMetricInsightPresentation,
 } from '../src/utils/metricGuidance.js'
 
 test('classifies device metric ranges from the provided guidance images', () => {
@@ -24,6 +25,9 @@ test('builds structured metric insights from the image-derived guidance', () => 
     bmi: 24.1,
     bmr: 1511,
     muscle: 50.3,
+    visceralFat: 10,
+    water: 53.3,
+    bone: 2.7,
   }
   const prev = {
     weight: 67.95,
@@ -31,12 +35,16 @@ test('builds structured metric insights from the image-derived guidance', () => 
     bmi: 24.0,
     bmr: 1508,
     muscle: 51.2,
+    visceralFat: 10,
+    water: 54.3,
+    bone: 2.7,
   }
 
   const insights = getMetricInsights(latest, prev)
   const bodyFatInsight = insights.find(item => item.key === 'bodyFat')
   const bmrInsight = insights.find(item => item.key === 'bmr')
   const muscleInsight = insights.find(item => item.key === 'muscle')
+  const boneInsight = insights.find(item => item.key === 'bone')
 
   assert.ok(bodyFatInsight)
   assert.equal(bodyFatInsight.statusLabel, '偏胖')
@@ -53,4 +61,27 @@ test('builds structured metric insights from the image-derived guidance', () => 
   assert.ok(muscleInsight)
   assert.equal(muscleInsight.statusLabel, '标准')
   assert.match(muscleInsight.analysis, /对比上次.*肌肉/)
+
+  assert.ok(boneInsight)
+  assert.equal(boneInsight.statusLabel, '不足')
+  assert.ok(boneInsight.dietAdvice.some(item => item.includes('牛奶')))
+})
+
+test('limits health metric details to the top priorities and summarizes the rest for quick scanning', () => {
+  const insights = [
+    { key: 'weight', label: '体重', statusLabel: '偏胖' },
+    { key: 'bodyFat', label: '体脂率', statusLabel: '偏胖' },
+    { key: 'bmr', label: '基础代谢', statusLabel: '偏低' },
+    { key: 'visceralFat', label: '内脏脂肪', statusLabel: '偏高' },
+    { key: 'water', label: '水分', statusLabel: '偏低' },
+  ]
+
+  const presentation = getMetricInsightPresentation(insights, { maxDetailed: 3 })
+
+  assert.deepEqual(
+    presentation.detailed.map(item => item.key),
+    ['bodyFat', 'bmr', 'visceralFat'],
+  )
+  assert.match(presentation.remainingSummary, /体重偏胖/)
+  assert.match(presentation.remainingSummary, /水分偏低/)
 })

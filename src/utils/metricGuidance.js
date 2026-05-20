@@ -400,6 +400,38 @@ function buildBoneInsight(latest, prev) {
   }
 }
 
+const INSIGHT_PRIORITY = {
+  bodyFat: 100,
+  bmr: 90,
+  visceralFat: 80,
+  bone: 70,
+  water: 60,
+  weight: 50,
+  bmi: 40,
+  muscle: 30,
+}
+
+function getInsightPriority(insight) {
+  return INSIGHT_PRIORITY[insight?.key] ?? 0
+}
+
+function formatInsightTag(insight) {
+  return `${insight.label}${insight.statusLabel}`
+}
+
+export function getMetricInsightPresentation(insights = [], options = {}) {
+  const { maxDetailed = 3 } = options
+  const sorted = [...insights].sort((a, b) => getInsightPriority(b) - getInsightPriority(a))
+  const detailed = sorted.slice(0, maxDetailed)
+  const remaining = sorted.slice(maxDetailed)
+
+  return {
+    detailed,
+    remaining,
+    remainingSummary: remaining.length ? `其余指标：${remaining.map(formatInsightTag).join('、')}。` : null,
+  }
+}
+
 export function getMetricInsights(latest = {}, prev = null) {
   return [
     buildWeightInsight(latest, prev),
