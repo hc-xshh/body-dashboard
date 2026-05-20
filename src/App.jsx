@@ -14,6 +14,8 @@ import { analyzeBodySignals } from './utils/rulesEngine'
 import { getTrainingContext } from './utils/trainingContext'
 import { getMeasurementOverview } from './utils/dashboardState'
 import { getDietPlan, getSkincarePlan, getTodayLabel, getTrainingPlan, weeklyTrainingLabel } from './data/dailyPlans'
+import { getDecisionDisplay } from './utils/decisionPresentation'
+import { getHistoryCards } from './utils/trendPresentation'
 
 const trendMetrics1 = [
   { key: 'weight', label: '体重(kg)' },
@@ -128,6 +130,7 @@ export default function App() {
   const dietPlan = getDietPlan(latest, todayLabel, todayTraining, sorted)
   const todayTrainingContext = getTrainingContext(todayLabel)
   const bodyEngine = analyzeBodySignals(latest, sorted, todayTrainingContext).decision
+  const bodyDecisionDisplay = getDecisionDisplay(bodyEngine)
   const historyDecisionMap = new Map(
     [...sorted]
       .sort((a, b) => a.date.localeCompare(b.date))
@@ -138,6 +141,7 @@ export default function App() {
         return [record.date, decision]
       }),
   )
+  const historyCards = getHistoryCards(sorted, historyDecisionMap)
 
   return (
     <div className="min-h-screen bg-dark-900 text-slate-200 font-sans">
@@ -261,8 +265,8 @@ export default function App() {
               contextChips={[
                 { label: '阶段', value: dietPlan.engine?.stageLabel ?? bodyEngine.stageLabel },
                 { label: '负荷', value: dietPlan.engine?.trainingLoadLabel ?? bodyEngine.trainingLoadLabel },
-                { label: 'intake', value: dietPlan.engine?.intakeStrategy ?? bodyEngine.intakeStrategy },
-                { label: '置信度', value: `${(((dietPlan.engine?.confidence ?? bodyEngine.confidence) || 0) * 100).toFixed(0)}%` },
+                { label: '饮食策略', value: getDecisionDisplay(dietPlan.engine ?? bodyEngine).intakeLabel },
+                { label: '置信度', value: getDecisionDisplay(dietPlan.engine ?? bodyEngine).confidenceText },
               ]}
             />
           </div>
@@ -272,7 +276,7 @@ export default function App() {
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">体重 & 体脂趋势</h2>
           <div className="bg-dark-800 rounded-xl p-4 border border-dark-600">
             <p className="mb-4 text-sm leading-relaxed text-slate-400">
-              趋势区现在会同时显示规则引擎判断：上方卡片代表历史阶段/模式切换，图中的虚线代表策略切换点。这里展示的是每次体测当时对应的判断，不等同于今天的执行策略。
+              趋势区展示的是每次体测当时的历史判断，不等同于今天执行单。手机端优先看上方“最近一次体测阶段”和最近几次切换卡片，再按需展开图表细看。
             </p>
             <TrendChart data={measurements} metrics={trendMetrics1} />
           </div>
@@ -287,7 +291,30 @@ export default function App() {
 
         <section className="scroll-mt-24">
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">历史记录</h2>
-          <div className="bg-dark-800 rounded-xl border border-dark-600 overflow-x-auto">
+          <div className="space-y-3 sm:hidden">
+            <p className="text-sm leading-relaxed text-slate-400">
+              手机端默认改成卡片视图，只保留最常看信息；需要完整明细时再横向查看表格。
+            </p>
+            {historyCards.map((card) => (
+              <article key={card.key} className="rounded-xl border border-dark-600 bg-dark-800 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-sm font-medium text-white">{card.dateLabel}</div>
+                    <div className="mt-1 text-xs leading-relaxed text-slate-400">{card.stageModeLabel}</div>
+                  </div>
+                </div>
+                <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+                  {card.metrics.map((metric) => (
+                    <div key={`${card.key}-${metric.label}`} className="rounded-lg border border-dark-700 bg-dark-900/60 px-3 py-2">
+                      <dt className="text-[11px] uppercase tracking-wider text-slate-500">{metric.label}</dt>
+                      <dd className="mt-1 text-sm font-medium text-slate-200">{metric.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </article>
+            ))}
+          </div>
+          <div className="hidden overflow-x-auto rounded-xl border border-dark-600 bg-dark-800 sm:block">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-dark-600 text-slate-500 text-xs uppercase">

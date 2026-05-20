@@ -1,8 +1,11 @@
+import { getDecisionDisplay } from '../utils/decisionPresentation'
+
 export default function AdvicePanel({ advice, engine = null }) {
   if (!advice.length) return null
 
   const bg = { good: 'bg-green-900/20 border-green-700/40', warn: 'bg-amber-900/20 border-amber-700/40', bad: 'bg-red-900/20 border-red-700/40' }
   const text = { good: 'text-green-400', warn: 'text-amber-400', bad: 'text-red-400' }
+  const decisionDisplay = engine ? getDecisionDisplay(engine) : null
 
   // ── evidenceGroups → structured card definitions ──
   const evidenceCards = []
@@ -67,14 +70,14 @@ export default function AdvicePanel({ advice, engine = null }) {
               负荷：{engine.trainingLoadLabel}
             </span>
             <span className="inline-flex rounded-full border border-dark-600 bg-dark-900/70 px-2.5 py-1 text-xs text-slate-300">
-              intake：{engine.intakeStrategy}
+              饮食策略：{decisionDisplay?.intakeLabel ?? '—'}
             </span>
             <span className="inline-flex rounded-full border border-dark-600 bg-dark-900/70 px-2.5 py-1 text-xs text-slate-400">
-              置信度 {(engine.confidence * 100).toFixed(0)}%
+              置信度 {decisionDisplay?.confidenceText ?? '—'}
             </span>
           </div>
 
-          <p className="mt-3 text-sm leading-relaxed text-slate-200">{engine.summary}</p>
+          <p className="mt-3 text-sm leading-relaxed text-slate-200">{decisionDisplay?.compactSummary ?? engine.summary}</p>
 
           {/* ── Structured evidence cards ── */}
           {!!evidenceCards.length && (

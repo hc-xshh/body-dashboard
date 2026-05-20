@@ -2,6 +2,8 @@ import ReactECharts from 'echarts-for-react'
 import { getTrendData } from '../utils/healthAnalysis'
 import { analyzeBodySignals } from '../utils/rulesEngine'
 import { getTrainingContext } from '../utils/trainingContext'
+import { getDecisionDisplay } from '../utils/decisionPresentation'
+import { getTrendChartLayout } from '../utils/trendPresentation'
 
 
 function buildDecisionTimeline(data = []) {
@@ -49,9 +51,11 @@ function computeBaselineBand(data, metricKey, minSamples = 4) {
 
 export default function TrendChart({ data, metrics }) {
   const colors = ['#6c63ff', '#22c55e', '#f59e0b', '#ef4444', '#38bdf8']
+  const layout = getTrendChartLayout(typeof window === 'undefined' ? 1280 : window.innerWidth)
   const decisionTimeline = buildDecisionTimeline(data)
   const decisionMap = new Map(decisionTimeline.map(item => [item.date, item]))
   const latestDecision = decisionTimeline[decisionTimeline.length - 1] ?? null
+  const latestDecisionDisplay = latestDecision ? getDecisionDisplay(latestDecision) : null
   const changeEvents = decisionTimeline.filter((item, index, list) => {
     if (index === 0) return true
     const prev = list[index - 1]
@@ -72,7 +76,7 @@ export default function TrendChart({ data, metrics }) {
       data: trend.map(d => [d.date, d.value]),
       smooth: true,
       symbol: 'circle',
-      symbolSize: 6,
+      symbolSize: layout.symbolSize,
       lineStyle: { color: colors[i % colors.length], width: 2 },
       itemStyle: { color: colors[i % colors.length] },
     }
@@ -103,7 +107,7 @@ export default function TrendChart({ data, metrics }) {
       baseSeries.markLine = {
         symbol: ['none', 'none'],
         label: {
-          show: true,
+          show: layout.showChangeLabels,
           color: '#94a3b8',
           fontSize: 10,
           formatter: ({ data }) => data?.label ?? '',
@@ -137,7 +141,7 @@ export default function TrendChart({ data, metrics }) {
 
         if (decision) {
           html += `<div style="margin-bottom:6px;color:#e2e8f0"><b>${decision.badge}</b> · ${decision.stageLabel}</div>`
-          html += `<div style="margin-bottom:6px;color:#94a3b8">负荷：${decision.trainingLoadLabel} / intake：${decision.intakeStrategy} / 置信度 ${decision.confidence}%</div>`
+          html += `<div style="margin-bottom:6px;color:#94a3b8">负荷：${decision.trainingLoadLabel} / 饮食策略：${getDecisionDisplay(decision).intakeLabel} / 置信度 ${getDecisionDisplay(decision).confidenceText}</div>`
         }
 
         params.forEach(p => {
@@ -156,15 +160,15 @@ export default function TrendChart({ data, metrics }) {
     legend: {
       data: metrics.map(m => m.label),
       textStyle: { color: '#94a3b8', fontSize: 12 },
-      bottom: 0,
+      bottom: layout.legendBottom,
     },
-    grid: { left: 40, right: 20, top: 24, bottom: 40 },
+    grid: layout.grid,
     xAxis: {
       type: 'time',
       axisLine: { lineStyle: { color: '#2f3354' } },
       axisLabel: {
         color: '#64748b',
-        fontSize: 11,
+        fontSize: layout.xAxisFontSize,
         formatter: v => {
           const d = new Date(v)
           return `${d.getMonth() + 1}/${d.getDate()}`
@@ -173,7 +177,7 @@ export default function TrendChart({ data, metrics }) {
       splitLine: { show: false },
     },
     yAxis: {
-      axisLabel: { color: '#64748b', fontSize: 11 },
+      axisLabel: { color: '#64748b', fontSize: layout.yAxisFontSize },
       splitLine: { lineStyle: { color: '#1e2235', type: 'dashed' } },
     },
     series,
@@ -194,9 +198,12 @@ export default function TrendChart({ data, metrics }) {
               负荷：{latestDecision.trainingLoadLabel}
             </span>
             <span className="inline-flex rounded-full border border-dark-600 bg-dark-900/70 px-2.5 py-1 text-xs text-slate-300">
-              intake：{latestDecision.intakeStrategy}
+              饮食策略：{latestDecisionDisplay?.intakeLabel ?? '—'}
             </span>
           </div>
+          <p className="text-sm leading-relaxed text-slate-300">
+            {latestDecisionDisplay?.compactSummary ?? latestDecision.summary}
+          </p>
 
           {!!recentChangeEvents.length && (
             <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
@@ -215,7 +222,7 @@ export default function TrendChart({ data, metrics }) {
         </div>
       )}
 
-      <ReactECharts option={option} style={{ height: '320px' }} opts={{ renderer: 'svg' }} />
+      <ReactECharts option={option} style={{ height: `${layout.height}px` }} opts={{ renderer: 'svg' }} />
     </div>
   )
 }
