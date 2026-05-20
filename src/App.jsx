@@ -4,6 +4,7 @@ import TrendChart from './components/TrendChart'
 import MetricCard from './components/MetricCard'
 import AdvicePanel from './components/AdvicePanel'
 import DailyPlanPanel from './components/DailyPlanPanel'
+import MetricInsightsPanel from './components/MetricInsightsPanel'
 import ReadingGuide from './components/ReadingGuide'
 import {
   generateAdvice,
@@ -261,13 +262,14 @@ export default function App() {
             <MetricCard label="骨量" value={latest.bone} unit="kg" status={getBoneStatus(latest.bone)} sub={latest.bone < 2.8 ? '不足' : '标准'} reference={metricReferenceMap.bone} />
             <MetricCard label="综合得分" value={latest.score} status={getScoreStatus(latest.score)} sub={latest.score < 80 ? '偏低' : '正常'} reference={metricReferenceMap.score} />
           </div>
+          <MetricInsightsPanel metricInsights={metricInsights} />
         </section>
 
         <section className="scroll-mt-24">
           <div className="flex flex-col">
             <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-widest mb-3">健康建议</h2>
             <div className="bg-dark-800 rounded-xl p-4 border border-dark-600 min-h-[360px]">
-              <AdvicePanel advice={advice} engine={bodyEngine} metricInsights={metricInsights} />
+              <AdvicePanel advice={advice} engine={bodyEngine} />
             </div>
           </div>
         </section>
