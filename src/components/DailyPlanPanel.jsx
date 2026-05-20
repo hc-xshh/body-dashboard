@@ -27,11 +27,11 @@ export default function DailyPlanPanel({
           <h3 className="text-base font-semibold text-white">{title}</h3>
           {subtitle && <p className="mt-1 text-sm leading-relaxed text-slate-400">{subtitle}</p>}
           {(summary || metaLine || highlights.length > 0) && (
-            <div className="mt-3 space-y-2 border-t border-dark-700/80 pt-3">
-              {summary && <p className="text-sm leading-relaxed text-slate-200">{summary}</p>}
-              {metaLine && <p className="text-xs leading-relaxed text-slate-500">{metaLine}</p>}
+            <div className="mt-3 rounded-xl border border-dark-700/80 bg-dark-900/45 p-3.5 sm:p-4">
+              {summary && <p className="text-sm leading-relaxed text-slate-100">{summary}</p>}
+              {metaLine && <p className="mt-2 text-xs leading-relaxed text-slate-500">{metaLine}</p>}
               {!!highlights.length && (
-                <ul className="space-y-1.5 text-sm leading-relaxed text-slate-400">
+                <ul className="mt-3 space-y-2 border-t border-dark-700/70 pt-3 text-sm leading-relaxed text-slate-400">
                   {highlights.map((highlight, index) => (
                     <li key={`${title}-highlight-${index}`} className="flex gap-2">
                       <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-slate-500" />
@@ -114,9 +114,9 @@ export default function DailyPlanPanel({
       </div>
 
       {!!reminders.length && (
-        <div className="mt-4 border-t border-dark-700 pt-4">
+        <div className="mt-4 rounded-xl border border-dark-700/80 bg-dark-900/35 p-3.5 sm:p-4">
           <div className="mb-2 text-xs uppercase tracking-widest text-slate-500">{reminderTitle}</div>
-          <ul className="space-y-2 text-sm leading-relaxed text-slate-400">
+          <ul className="space-y-2.5 text-sm leading-relaxed text-slate-400">
             {reminders.map((text, index) => (
               <li key={`${text}-${index}`} className="flex gap-2">
                 <span className="text-slate-600">•</span>
