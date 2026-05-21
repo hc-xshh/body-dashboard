@@ -1,6 +1,14 @@
 import { useMemo } from 'react'
 import { getMetricInsightPresentation } from '../utils/metricGuidance'
 
+function formatAdviceText(items = []) {
+  return items
+    .map(item => item?.trim())
+    .filter(Boolean)
+    .map(item => item.replace(/[。；;，,]+$/u, ''))
+    .join('；')
+}
+
 export default function MetricInsightsPanel({ metricInsights = [] }) {
   const metricInsightPresentation = useMemo(
     () => getMetricInsightPresentation(metricInsights),
@@ -44,11 +52,11 @@ export default function MetricInsightsPanel({ metricInsights = [] }) {
               </p>
               <p className="text-slate-400">
                 <span className="font-semibold text-slate-200">运动重点：</span>
-                {insight.movementAdvice.join('；')}
+                {formatAdviceText(insight.movementAdvice)}
               </p>
               <p className="text-slate-400">
                 <span className="font-semibold text-slate-200">饮食重点：</span>
-                {insight.dietAdvice.join('；')}
+                {formatAdviceText(insight.dietAdvice)}
               </p>
             </div>
           </div>

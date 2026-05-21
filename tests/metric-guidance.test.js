@@ -119,3 +119,42 @@ test('builds a compact fold-summary while keeping all metric insights available'
   assert.match(presentation.summary, /基础代谢偏低/)
   assert.match(presentation.summary, /共5项/)
 })
+
+test('formats delta copy and joined advice text without awkward symbols', () => {
+  const latest = {
+    weight: 68.1,
+    bodyFat: 22.2,
+    bmi: 24.1,
+    bmr: 1514,
+    muscle: 50.5,
+    visceralFat: 10,
+    subcutaneousFat: 14.8,
+    protein: 16.2,
+    skeletalMuscleRate: 43.6,
+    leanBodyMass: 53.1,
+    water: 53.3,
+    bone: 2.7,
+  }
+  const prev = {
+    weight: 67.9,
+    bodyFat: 22.2,
+    bmi: 24.1,
+    bmr: 1511,
+    muscle: 50.3,
+    visceralFat: 10,
+    subcutaneousFat: 14.8,
+    protein: 16.2,
+    skeletalMuscleRate: 43.6,
+    leanBodyMass: 53.1,
+    water: 53.3,
+    bone: 2.7,
+  }
+
+  const insights = getMetricInsights(latest, prev)
+  const bodyFatInsight = insights.find(item => item.key === 'bodyFat')
+  const bmrInsight = insights.find(item => item.key === 'bmr')
+
+  assert.match(bodyFatInsight.analysis, /基本持平/)
+  assert.doesNotMatch(bodyFatInsight.analysis, /持平%/)
+  assert.match(bmrInsight.analysis, /\+3\.0 kcal/)
+})

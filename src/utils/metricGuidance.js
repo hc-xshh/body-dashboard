@@ -119,12 +119,17 @@ function normalizeNumber(value) {
   return Number.isFinite(num) ? num : null
 }
 
+function formatDeltaUnit(unit = '') {
+  if (!unit) return ''
+  return ['kg', 'kcal'].includes(unit) ? ` ${unit}` : unit
+}
+
 function formatSignedDelta(value, digits = 1, unit = '') {
   const num = normalizeNumber(value)
   if (num == null) return null
+  if (num === 0) return '基本持平'
   const abs = Math.abs(num).toFixed(digits)
-  if (num === 0) return `持平${unit}`
-  return `${num > 0 ? '+' : '-'}${abs}${unit}`
+  return `${num > 0 ? '+' : '-'}${abs}${formatDeltaUnit(unit)}`
 }
 
 export function classifyDeviceMetric(metricKey, value) {
@@ -286,7 +291,7 @@ function buildBmrInsight(latest, prev) {
       ? '基础代谢达到设备达标线，继续保持作息、补水和训练节律。'
       : '基础代谢偏低，通常和睡眠不足、运动量不足或饮水不足有关，也提示当前基础消耗能力偏弱。',
     analysis: [
-      delta == null ? null : `对比上次基础代谢 ${formatSignedDelta(delta, 1)}。`,
+      delta == null ? null : `对比上次基础代谢 ${formatSignedDelta(delta, 1, 'kcal')}。`,
       classification.statusLabel === '达标'
         ? '基础代谢已达到设备达标线。'
         : '这类情况更适合先稳住作息、补水和有氧，再配合耐力训练慢慢把静息代谢拉起来。',

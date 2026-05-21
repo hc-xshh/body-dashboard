@@ -16,6 +16,8 @@ test('metric insights panel lives under the core metrics section and keeps a com
   assert.match(panelSource, /分析：/)
   assert.match(panelSource, /运动重点：/)
   assert.match(panelSource, /饮食重点：/)
+  assert.match(panelSource, /formatAdviceText/)
+  assert.match(panelSource, /replace\(\/\[。；;，,\]\+\$\/u, ''\)/)
   assert.match(panelSource, /font-semibold text-slate-200">概览：/)
   assert.match(panelSource, /font-semibold text-slate-200">分析：/)
   assert.match(panelSource, /font-semibold text-slate-200">运动重点：/)
