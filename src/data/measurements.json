@@ -1,5 +1,56 @@
 [
   {
+    "date": "2026-05-21",
+    "time": "08:06",
+    "weekday": "周四",
+    "weight": 68.3,
+    "bodyFat": 22.2,
+    "bmi": 24.1,
+    "bmr": 1514,
+    "muscle": 50.5,
+    "visceralFat": 10,
+    "subcutaneousFat": 14.8,
+    "protein": 16.2,
+    "skeletalMuscleRate": 43.6,
+    "leanBodyMass": 53.1,
+    "water": 53.3,
+    "bone": 2.7,
+    "score": 77,
+    "bodyAge": 30,
+    "bodyType": "偏胖型",
+    "decisionSnapshot": {
+      "version": "rules-engine-snapshot-v1",
+      "badge": "先观察",
+      "stageLabel": "噪声观察阶段",
+      "primaryMode": "observe_noise",
+      "trainingLoad": "upper_body_strength",
+      "trainingLoadLabel": "力量日",
+      "intakeStrategy": "support_training",
+      "summary": "最近数据存在一定噪声，今天以稳定执行为主，不根据单次波动做大动作。",
+      "confidence": 0.88,
+      "evidenceGroups": {
+        "baseline": [
+          "体脂相对个人基线 +1.2%",
+          "体脂个人波动带 20.7% - 22.5%，当前处于带内",
+          "体重相对个人基线 -0.1kg",
+          "体重个人波动带 68.2 - 68.8kg，当前处于带内",
+          "长窗口已覆盖 10 次记录，判断不只看最近 1-2 次波动"
+        ],
+        "trend": [
+          "近几次体脂 -0.3%",
+          "近几次体重 +1.8kg",
+          "短窗口体脂斜率 -0.10%/次"
+        ],
+        "risk": [
+          "内脏脂肪指数 10 处于偏高区间"
+        ],
+        "hydration": [
+          "当前水分 53.3% 偏低"
+        ]
+      }
+    }
+  },
+  {
     "date": "2026-05-20",
     "time": "07:56",
     "weekday": "周三",
