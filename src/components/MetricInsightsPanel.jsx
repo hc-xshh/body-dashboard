@@ -35,19 +35,19 @@ export default function MetricInsightsPanel({ metricInsights = [] }) {
             </div>
             <div className="space-y-2 text-sm leading-relaxed">
               <p className="text-slate-300">
-                <span className="font-medium text-slate-200">概览：</span>
+                <span className="font-semibold text-slate-200">概览：</span>
                 {insight.summary}
               </p>
               <p className="text-slate-400">
-                <span className="font-medium text-slate-300">分析：</span>
+                <span className="font-semibold text-slate-200">分析：</span>
                 {insight.analysis}
               </p>
               <p className="text-slate-400">
-                <span className="font-medium text-slate-300">运动重点：</span>
+                <span className="font-semibold text-slate-200">运动重点：</span>
                 {insight.movementAdvice.join('；')}
               </p>
               <p className="text-slate-400">
-                <span className="font-medium text-slate-300">饮食重点：</span>
+                <span className="font-semibold text-slate-200">饮食重点：</span>
                 {insight.dietAdvice.join('；')}
               </p>
             </div>

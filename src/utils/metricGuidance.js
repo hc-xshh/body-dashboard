@@ -1,4 +1,4 @@
-export const BODY_METRIC_GUIDANCE_VERSION = 'body-metric-guidance-v1'
+export const BODY_METRIC_GUIDANCE_VERSION = 'body-metric-guidance-v2'
 
 const DEVICE_RANGES = {
   weight: {
@@ -175,12 +175,12 @@ function buildWeightInsight(latest, prev) {
     rangeText: classification.referenceText,
     summary: classification.statusLabel === '标准'
       ? '体重目前在设备标准范围内，继续保持当前训练和饮食节律。'
-      : '体重偏高时，重点是保护关节、优先低冲击有氧，并把饮食收口做扎实。',
+      : '体重偏高，增加了患心血管及内分泌疾病的风险，也会增加心肺负担。',
     analysis: [
       delta == null ? null : `对比上次体重 ${formatSignedDelta(delta, 2, 'kg')}。`,
       classification.statusLabel === '标准'
         ? '体重维持在设备标准区间，继续看长期趋势即可。'
-        : '体重偏高会增加心血管及内分泌疾病风险，也会增加心肺和膝关节负担。',
+        : '体重偏高时，腰、膝等大关节承受的重量更大，日常活动和运动时都要注意关节负担。',
     ].filter(Boolean).join(' '),
     movementAdvice: [
       '运动时先注意保护膝关节。',
@@ -212,12 +212,12 @@ function buildBodyFatInsight(latest, prev) {
     rangeText: classification.referenceText,
     summary: classification.statusLabel === '标准'
       ? '体脂率处于标准区间，继续保持当前节律即可。'
-      : '体脂率偏高时，先降低精白淀粉主食比例和甜饮，再把蛋白补足，用稳定有氧拉开赤字。',
+      : '体脂率偏高，容易造成内脏器官脂肪过多，并诱发冠心病、高血压、脂肪肝等问题。',
     analysis: [
       delta == null ? null : `对比上次体脂率 ${formatSignedDelta(delta, 1, '%')}。`,
       classification.statusLabel === '标准'
         ? '当前体脂率在设备标准区间，继续看长期趋势。'
-        : '体脂率过高容易造成内脏器官脂肪过多，并增加冠心病、高血压、脂肪肝等风险。',
+        : '当前更适合用稳定有氧、规律力量训练和持续饮食控制来慢慢拉低体脂，而不是短期激进减重。',
     ].filter(Boolean).join(' '),
     movementAdvice: [
       '可以进行慢跑，加速脂肪氧化消耗。',
@@ -249,12 +249,12 @@ function buildBmiInsight(latest, prev) {
     rangeText: classification.referenceText,
     summary: classification.statusLabel === '标准'
       ? 'BMI处于标准区间，继续稳定执行即可。'
-      : 'BMI偏胖时，把重点放在稳定有氧、控制总热量和避免暴饮暴食。',
+      : 'BMI偏高，通常意味着身体偏胖，并与高血压、血脂升高、尿酸增高等并发症风险相关。',
     analysis: [
       delta == null ? null : `对比上次 BMI ${formatSignedDelta(delta, 1)}。`,
       classification.statusLabel === '标准'
         ? 'BMI当前处于设备标准区间，继续保持。'
-        : '身体偏胖与高血压、血脂升高、尿酸增高等并发症相关，也会增加腰膝等大关节磨损。',
+        : '腰、膝等大关节承受的重量更大，活动和训练时都更要注意冲击与磨损。',
     ].filter(Boolean).join(' '),
     movementAdvice: [
       '可以做有氧运动，如慢跑、游泳、健身操等。',
@@ -284,12 +284,12 @@ function buildBmrInsight(latest, prev) {
     rangeText: classification.referenceText,
     summary: classification.statusLabel === '达标'
       ? '基础代谢达到设备达标线，继续保持作息、补水和训练节律。'
-      : '基础代谢偏低时，不要继续硬压热量，要补水、做够有氧，再接一点耐力训练。',
+      : '基础代谢偏低，通常和睡眠不足、运动量不足或饮水不足有关，也提示当前基础消耗能力偏弱。',
     analysis: [
       delta == null ? null : `对比上次基础代谢 ${formatSignedDelta(delta, 1)}。`,
       classification.statusLabel === '达标'
         ? '基础代谢已达到设备达标线。'
-        : '基础代谢偏低可能与睡眠不足、运动量不足或饮水不足有关，也会增加肥胖、消化功能下降和高脂血症风险。',
+        : '这类情况更适合先稳住作息、补水和有氧，再配合耐力训练慢慢把静息代谢拉起来。',
     ].filter(Boolean).join(' '),
     movementAdvice: [
       '每天坚持有氧运动。',
@@ -357,12 +357,12 @@ function buildVisceralFatInsight(latest, prev) {
     rangeText: classification.referenceText,
     summary: classification.statusLabel === '标准'
       ? '内脏脂肪当前在标准区间，继续守住有氧频率和晚间收口。'
-      : '内脏脂肪偏高时，有氧是主线，同时把油炸、烧烤、腌制和高油脂食物压下去。',
+      : '内脏脂肪偏高，容易引起高血糖、高血脂，也可能增加脂肪肝风险。',
     analysis: [
       delta == null ? null : `对比上次内脏脂肪 ${formatSignedDelta(delta, 0)}。`,
       classification.statusLabel === '标准'
         ? '内脏脂肪维持在标准区间，继续保持当前训练与饮食节律即可。'
-        : '内脏脂肪过多会增加腹型肥胖、脂肪肝、糖尿病和高血压等风险。',
+        : '这项指标更适合通过持续有氧、控制高油脂食物和稳定作息来慢慢往下压，不适合靠几天激进节食解决。',
     ].filter(Boolean).join(' '),
     movementAdvice: [
       '以有氧运动为主，适当进行跑步、游泳、爬山。',
