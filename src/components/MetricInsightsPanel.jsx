@@ -21,24 +21,36 @@ export default function MetricInsightsPanel({ metricInsights = [] }) {
         <span className="text-xs text-slate-500 group-open:hidden">查看全部指标说明</span>
         <span className="hidden text-xs text-slate-500 group-open:inline">收起指标说明</span>
       </summary>
-      <div className="mt-3 space-y-4 border-l-2 border-dark-700 pl-3">
+      <div className="mt-3 divide-y divide-dark-700/80 border-l-2 border-dark-700 pl-3">
         {metricInsightPresentation.items.map((insight) => (
-          <div key={insight.key} className="space-y-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-medium text-slate-100">{insight.label}</span>
-              <span className="text-xs text-slate-400">{insight.statusLabel}</span>
-              {insight.rangeText && <span className="text-[11px] text-slate-500">{insight.rangeText}</span>}
+          <div key={insight.key} className="space-y-3 py-4 first:pt-0 last:pb-0">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span className="text-sm font-semibold text-slate-100">{insight.label}</span>
+                <span className="text-xs font-medium text-slate-300">状态：{insight.statusLabel}</span>
+              </div>
+              {insight.rangeText && (
+                <p className="text-[11px] leading-relaxed text-slate-500">区间：{insight.rangeText}</p>
+              )}
             </div>
-            <p className="text-sm leading-relaxed text-slate-300">{insight.summary}</p>
-            <p className="text-sm leading-relaxed text-slate-400">{insight.analysis}</p>
-            <p className="text-sm leading-relaxed text-slate-400">
-              <span className="text-slate-300">运动重点：</span>
-              {insight.movementAdvice.join('；')}
-            </p>
-            <p className="text-sm leading-relaxed text-slate-400">
-              <span className="text-slate-300">饮食重点：</span>
-              {insight.dietAdvice.join('；')}
-            </p>
+            <div className="space-y-2 text-sm leading-relaxed">
+              <p className="text-slate-300">
+                <span className="font-medium text-slate-200">概览：</span>
+                {insight.summary}
+              </p>
+              <p className="text-slate-400">
+                <span className="font-medium text-slate-300">分析：</span>
+                {insight.analysis}
+              </p>
+              <p className="text-slate-400">
+                <span className="font-medium text-slate-300">运动重点：</span>
+                {insight.movementAdvice.join('；')}
+              </p>
+              <p className="text-slate-400">
+                <span className="font-medium text-slate-300">饮食重点：</span>
+                {insight.dietAdvice.join('；')}
+              </p>
+            </div>
           </div>
         ))}
       </div>

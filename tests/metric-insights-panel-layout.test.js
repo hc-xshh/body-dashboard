@@ -9,6 +9,12 @@ test('metric insights panel lives under the core metrics section and keeps a com
   assert.match(panelSource, /<details/)
   assert.match(panelSource, /查看全部指标说明/)
   assert.match(panelSource, /metricInsightPresentation\.summary/)
+  assert.match(panelSource, /divide-y divide-dark-700\/80/)
+  assert.match(panelSource, /状态：/)
+  assert.match(panelSource, /概览：/)
+  assert.match(panelSource, /分析：/)
+  assert.match(panelSource, /运动重点：/)
+  assert.match(panelSource, /饮食重点：/)
   assert.doesNotMatch(panelSource, /rounded-xl border border-dark-700 bg-dark-900\/45 p-3/)
 
   assert.match(appSource, /import MetricInsightsPanel/)
