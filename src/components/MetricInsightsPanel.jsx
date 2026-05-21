@@ -20,15 +20,17 @@ export default function MetricInsightsPanel({ metricInsights = [] }) {
   return (
     <details className="mt-4 rounded-xl border border-dark-600 bg-dark-800/70 p-4 group">
       <summary className="flex cursor-pointer list-none items-center gap-2 text-sm text-slate-300">
-        <span className="flex min-w-0 items-center gap-2">
+        <span className="flex items-center gap-2">
           <span className="shrink-0 text-xs font-semibold uppercase tracking-widest text-slate-400">指标说明</span>
-          {metricInsightPresentation.summary && (
-            <span className="truncate text-[11px] text-slate-500">{metricInsightPresentation.summary}</span>
-          )}
         </span>
         <span className="ml-auto shrink-0 text-[11px] text-slate-500 group-open:hidden">查看</span>
         <span className="ml-auto hidden shrink-0 text-[11px] text-slate-500 group-open:inline">收起</span>
       </summary>
+      {metricInsightPresentation.summary && (
+        <p className="mt-2 line-clamp-2 text-[11px] leading-relaxed text-slate-500">
+          {metricInsightPresentation.summary}
+        </p>
+      )}
       <div className="mt-3 divide-y divide-dark-700/80 border-l-2 border-dark-700 pl-3">
         {metricInsightPresentation.items.map((insight) => (
           <div key={insight.key} className="space-y-3 py-4 first:pt-0 last:pb-0">
