@@ -9,7 +9,7 @@ import {
 } from '../src/utils/metricGuidance.js'
 
 test('classifies device metric ranges from the provided guidance images', () => {
-  assert.equal(BODY_METRIC_GUIDANCE_VERSION, 'body-metric-guidance-v2')
+  assert.equal(BODY_METRIC_GUIDANCE_VERSION, 'body-metric-guidance-v3')
 
   assert.equal(classifyDeviceMetric('weight', 68.1).statusLabel, '偏胖')
   assert.equal(classifyDeviceMetric('bodyFat', 22.2).statusLabel, '偏胖')
