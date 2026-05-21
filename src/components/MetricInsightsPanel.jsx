@@ -26,8 +26,8 @@ export default function MetricInsightsPanel({ metricInsights = [] }) {
             <span className="ml-2 text-xs text-slate-500">{metricInsightPresentation.summary}</span>
           )}
         </span>
-        <span className="text-xs text-slate-500 group-open:hidden">查看全部指标说明</span>
-        <span className="hidden text-xs text-slate-500 group-open:inline">收起指标说明</span>
+        <span className="text-xs text-slate-500 group-open:hidden">查看</span>
+        <span className="hidden text-xs text-slate-500 group-open:inline">收起</span>
       </summary>
       <div className="mt-3 divide-y divide-dark-700/80 border-l-2 border-dark-700 pl-3">
         {metricInsightPresentation.items.map((insight) => (

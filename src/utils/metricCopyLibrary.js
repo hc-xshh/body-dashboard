@@ -1,4 +1,49 @@
-export const METRIC_COPY_LIBRARY = {
+export const COPY_SOURCE_TYPES = {
+  SCREENSHOT_GROUNDED: 'screenshot_grounded',
+  INFERRED: 'inferred',
+}
+
+const SCREENSHOT_GROUNDED_STATUS_KEYS = {
+  weight: ['overweight'],
+  bodyFat: ['overweight'],
+  bmi: ['overweight'],
+  bmr: ['low'],
+  muscle: ['standard'],
+  visceralFat: ['high'],
+  subcutaneousFat: ['standard'],
+  protein: ['standard'],
+  skeletalMuscleRate: ['standard'],
+  water: ['standard'],
+  bone: ['low'],
+}
+
+function withCopySource(metricKey, statusKey, copy) {
+  const groundedStatuses = SCREENSHOT_GROUNDED_STATUS_KEYS[metricKey] ?? []
+  const sourceType = groundedStatuses.includes(statusKey)
+    ? COPY_SOURCE_TYPES.SCREENSHOT_GROUNDED
+    : COPY_SOURCE_TYPES.INFERRED
+
+  return {
+    ...copy,
+    sourceType,
+  }
+}
+
+function createMetricCopyLibrary(library) {
+  return Object.fromEntries(
+    Object.entries(library).map(([metricKey, statuses]) => [
+      metricKey,
+      Object.fromEntries(
+        Object.entries(statuses).map(([statusKey, copy]) => [
+          statusKey,
+          withCopySource(metricKey, statusKey, copy),
+        ]),
+      ),
+    ]),
+  )
+}
+
+export const METRIC_COPY_LIBRARY = createMetricCopyLibrary({
   weight: {
     underweight: {
       summary: '体重偏瘦时，说明当前体重低于设备标准范围，重点是先稳住能量摄入和恢复。',
@@ -350,10 +395,11 @@ export const METRIC_COPY_LIBRARY = {
       dietAdvice: ['继续保证补钙饮食和规律进食。'],
     },
   },
-}
+})
 
 export const SPECIAL_METRIC_COPY = {
   leanBodyMass: {
+    sourceType: COPY_SOURCE_TYPES.SCREENSHOT_GROUNDED,
     summary: '去脂体重是结果型指标，主要用于观察瘦体重是否稳住，不单独做红黄绿判断。',
     analysis: '去脂体重又称瘦体重，是指除脂肪以外身体其他成分的重量，肌肉是其中的主要部分。 去脂体重高通常说明身体更强壮、瘦体重占比更好。',
     movementAdvice: ['优先维持力量训练和恢复，不要因短期体重波动随意削减训练。'],

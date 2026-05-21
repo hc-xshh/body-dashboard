@@ -7,7 +7,10 @@ const appSource = readFileSync(new URL('../src/App.jsx', import.meta.url), 'utf8
 
 test('metric insights panel lives under the core metrics section and keeps a compact foldable layout', () => {
   assert.match(panelSource, /<details/)
-  assert.match(panelSource, /查看全部指标说明/)
+  assert.match(panelSource, /group-open:hidden">查看</)
+  assert.match(panelSource, /group-open:inline">收起</)
+  assert.doesNotMatch(panelSource, /查看全部指标说明/)
+  assert.doesNotMatch(panelSource, /收起指标说明/)
   assert.match(panelSource, /metricInsightPresentation\.summary/)
   assert.match(panelSource, /divide-y divide-dark-700\/80/)
   assert.match(panelSource, /状态：/)

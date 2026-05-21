@@ -32,6 +32,9 @@ function buildStatusBasedInsight(latest, prev, {
     statusLabel: classification.statusLabel,
     tone: classification.tone,
     rangeText: classification.referenceText,
+    copySource: {
+      type: copy.sourceType,
+    },
     summary: copy.summary,
     analysis: [
       delta == null ? null : `对比上次${deltaLabel ?? classification.label} ${formatSignedDelta(delta, deltaDigits, deltaUnit)}。`,
@@ -55,6 +58,9 @@ function buildLeanBodyMassInsight(latest, prev) {
     statusLabel: '未见状态标签',
     tone: 'na',
     rangeText: null,
+    copySource: {
+      type: copy.sourceType,
+    },
     summary: copy.summary,
     analysis: [
       delta == null ? null : `对比上次去脂体重 ${formatSignedDelta(delta, 1, 'kg')}。`,

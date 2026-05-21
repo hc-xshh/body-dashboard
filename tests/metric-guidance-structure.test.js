@@ -26,6 +26,7 @@ test('fixed copy library covers every configured device status', () => {
     for (const status of config.statuses) {
       const copy = getMetricStatusCopy(metricKey, status.key)
       assert.ok(copy, `${metricKey}.${status.key} missing fixed copy`)
+      assert.ok(copy.sourceType, `${metricKey}.${status.key} missing sourceType`)
       assert.ok(copy.summary, `${metricKey}.${status.key} missing summary`)
       assert.ok(copy.analysis, `${metricKey}.${status.key} missing analysis`)
       assert.ok(Array.isArray(copy.movementAdvice) && copy.movementAdvice.length, `${metricKey}.${status.key} missing movement advice`)
@@ -84,4 +85,31 @@ test('builds missing-status insights from the fixed copy library', () => {
 
   assert.equal(classifyDeviceMetric('water', latest.water).statusKey, 'high')
   assert.match(find('water').summary, /水分偏高/)
+})
+
+test('insights expose whether copy is grounded in screenshots or inferred fill-in', () => {
+  const groundedLatest = {
+    weight: 68.1,
+    bodyFat: 22.2,
+    bmi: 24.1,
+    bmr: 1511,
+    muscle: 50.3,
+    visceralFat: 10,
+    subcutaneousFat: 14.8,
+    protein: 16.2,
+    skeletalMuscleRate: 43.6,
+    leanBodyMass: 53.0,
+    water: 53.3,
+    bone: 2.7,
+  }
+  const inferredLatest = {
+    ...groundedLatest,
+    weight: 50.8,
+  }
+
+  const groundedInsight = getMetricInsights(groundedLatest).find(item => item.key === 'weight')
+  const inferredInsight = getMetricInsights(inferredLatest).find(item => item.key === 'weight')
+
+  assert.equal(groundedInsight.copySource?.type, 'screenshot_grounded')
+  assert.equal(inferredInsight.copySource?.type, 'inferred')
 })
